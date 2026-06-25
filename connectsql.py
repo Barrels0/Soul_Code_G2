@@ -1,4 +1,4 @@
-import os,string,random
+import os
 import mysql.connector
 from dotenv import load_dotenv
 import smtplib
@@ -52,7 +52,7 @@ def enviar_email_relatorio(id_operador, resposta, assunto):
     cursor = conexao.cursor()
     
     try:
-        cursor.execute("SELECT gmail FROM usuarios WHERE id_usuario = %s", (id_operador,))
+        cursor.execute("SELECT gmail FROM usuarios WHERE id_usuario = %s AND ativo = 1", (id_operador,))
         result = cursor.fetchone()
         
         if not result:

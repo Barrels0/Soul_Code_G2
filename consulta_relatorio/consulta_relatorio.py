@@ -2,33 +2,49 @@ from connectsql import obter_conexao
 import datetime
 import mysql.connector
 from forces import force_int,force_float,force_str
-
+from consulta_relatorio.exportacoes import perguntar_exportacao
+import pandas as pd
 
 def relatorio_expresso():
-    print("RELATÓRIOS EXPRESSO")
+    print("\n" + "="*40)
+    print(" RELATÓRIO EXPRESSO: ESTOQUE CRÍTICO ")
+    print("="*40)
 
     try:
         conexao = obter_conexao()
-        cursor = conexao.cursor()
-        cursor.execute("""
-            SELECT nome
+        
+        if not conexao:
+            return
+
+        
+        query = """
+            SELECT id_produto AS 'ID', 
+                   nome AS 'Produto', 
+                   quantidade_estoque AS 'Estoque Atual'
             FROM produtos
-            WHERE quantidade_estoque < 5
-        """)
+            WHERE quantidade_estoque < 5 AND ativo = 1
+            ORDER BY quantidade_estoque ASC
+        """
 
-        critico = [linha[0] for linha in cursor.fetchall()]
-        if len(critico) == 0:
-            print("Nenhuma bebida com estoque baixo")
+        
+        df_critico = pd.read_sql(query, conexao)
+
+        if df_critico.empty:
+            print("Estoque seguro! Nenhuma bebida com menos de 5 unidades.")
         else:
-            print(", ".join(critico))
+            print("\nATENÇÃO! Produtos precisando de reposição urgente:\n")
+            
+            
+            print(df_critico.to_string(index=False))
+            
+            
+            perguntar_exportacao(df_critico, nome_padrao="relatorio_estoque_critico")
 
-    except mysql.connector.Error as erro:
-        conexao.rollback()
-        print(f"Erro no banco de dados: {erro}")
+    except Exception as erro:
+        print(f"Erro inesperado ao gerar o relatório expresso: {erro}")
 
     finally:
         if "conexao" in locals() and conexao.is_connected():
-            cursor.close()
             conexao.close()
 
 

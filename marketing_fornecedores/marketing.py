@@ -167,8 +167,10 @@ def promocoes():
             conexao = obter_conexao()
             cursor = conexao.cursor()
             try:
+                conexao.start_transaction()
+                
                 cursor.execute(
-                    "UPDATE produtos SET desconto = %s WHERE id_produto = %s",
+                    "UPDATE produtos SET desconto = %s WHERE id_produto = %s AND ativo = 1",
                     (desconto, id_produto)
                 )
                 conexao.commit()
@@ -196,7 +198,8 @@ def promocoes():
             conexao = obter_conexao()
             cursor = conexao.cursor()
             try:
-                cursor.execute("UPDATE produtos SET desconto = %s", (desconto,))
+                conexao.start_transaction()
+                cursor.execute("UPDATE produtos SET desconto = %s AND ativo = 1", (desconto,))
                 conexao.commit()
                 print("Desconto aplicado com sucesso a TODOS os produtos!")
             except mysql.connector.Error as e:
@@ -230,9 +233,9 @@ def promocoes():
                 if not (0 <= desconto < 100):
                     print("ERRO: Desconto inválido! Deve ser entre 0 e 99.")
                     continue
-
+                conexao.start_transaction()
                 cursor.execute(
-                    "UPDATE produtos SET desconto = %s WHERE id_categoria = %s",
+                    "UPDATE produtos SET desconto = %s WHERE id_categoria = %s AND ativo = 1",
                     (desconto, id_categoria)
                 )
                 conexao.commit()
@@ -253,6 +256,7 @@ def promocoes():
                 conexao = obter_conexao()
                 cursor = conexao.cursor()
                 try:
+                    conexao.start_transaction()
                     cursor.execute("UPDATE produtos SET desconto = 0")
                     conexao.commit()
                     print("Todos os descontos foram removidos. Preços originais restaurados!")

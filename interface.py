@@ -18,17 +18,20 @@ def menu_adm(caixa_atual):
     cursor = conexao.cursor()
     
     try:
-        # Buscamos a coluna desconto junto com os dados do produto
         cursor.execute(
-            """SELECT id_produto, nome, id_categoria, id_fornecedor, preco_venda, quantidade_estoque, nota, desconto 
-               FROM produtos 
-               WHERE ativo = 1"""
+            """SELECT p.id_produto, p.nome, c.nome, f.nome, p.preco_venda, p.quantidade_estoque, p.nota, p.desconto
+               FROM produtos AS p
+               INNER JOIN fornecedores AS f
+                   ON p.id_fornecedor = f.id_fornecedor
+               INNER JOIN categorias AS c
+                   ON p.id_categoria = c.id_categoria 
+               WHERE p.ativo = 1"""
         )
         resultados = cursor.fetchall()
         
-        print("--- ESTOQUE ATUAL (PRODUTOS ATIVOS) ---")
+        print("--- ESTOQUE ATUAL ---")
         for bebida in resultados:
-            id_produto, nome, id_categoria, id_fornecedor, preco_venda, quantidade_estoque, nota, desconto = bebida
+            id_produto, nome_produto, nome_categoria, nome_fornecedor, preco_venda, quantidade_estoque, nota, desconto = bebida
             
             preco_final = float(preco_venda)
             tag_promo = ""
@@ -38,7 +41,8 @@ def menu_adm(caixa_atual):
                 tag_promo = f" (-{desconto}%)"
                 
             print(
-                f"[{id_produto}] {nome}{tag_promo} | Tipo: {id_categoria} | Fornecedor: {id_fornecedor} | Nota: {nota} | R$ {preco_final:.2f} | Estoque: {quantidade_estoque}"
+                f"[{id_produto:^3}] | {nome_produto:<28}(-{tag_promo}) | {nome_categoria:<15} | {nome_fornecedor:<15} | "
+                f"{quantidade_estoque:^7} | {nota:^4} | R$ {preco_final:>6.2f}"
             )
             
     except mysql.connector.Error as e:
@@ -60,19 +64,19 @@ def menu_adm(caixa_atual):
         │ [4] Cadastrar Nova Bebida         [5] Repor Estoque            │
         │ [6] Alterar Preço                 [7] Alterar Nome             │
         │ [8] Desativar Bebida              [9] Reativar Bebida          │
-        │ [10] Adicionar Cliente                                         │
+        │ [10] Adicionar Cliente            [11] Adicionar categoria     │
         └────────────────────────────────────────────────────────────────┘
 
         ┌── CONSULTAS E RELATÓRIOS ──────────────────────────────────────┐
-        │ [11] Buscar por Nome              [12] Relatórios Expresso     │
-        │ [13] Histórico de Vendas          [14] Catálogo Ordenado       │
-        │ [15] Filtro por Preço             [16] Estatísticas e Balanço  │
+        │ [12] Busca                        [13] Relatórios Expresso     │
+        │ [14] Histórico de Vendas          [15] Catálogo Ordenado       │
+        │ [16] Filtro por Preço             [17] Estatísticas e Balanço  │
         └────────────────────────────────────────────────────────────────┘
 
         ┌── MARKETING E FORNECEDORES ────────────────────────────────────┐
-        │ [17] Promoções                    [18] Novo Fornecedor         │
-        │ [19] Adicionar Cupom              [20] Cupons Mais Utilizados  │
-        │ [21] Ver Dashboard Analytics      [22] Reclame aqui            │
+        │ [18] Promoções                    [19] Novo Fornecedor         │
+        │ [20] Adicionar Cupom              [21] Cupons Mais Utilizados  │
+        │ [22] Ver Dashboard Analytics      [23] Reclame aqui            │
         └────────────────────────────────────────────────────────────────┘
 
         ┌────────────────────────────────────────────────────────────────┐
@@ -97,17 +101,20 @@ def menu_funca(caixa_atual):
     cursor = conexao.cursor()
     
     try:
-        # Funcionário também visualiza o preço calculado com o desconto
         cursor.execute(
-            """SELECT id_produto, nome, id_categoria, id_fornecedor, preco_venda, quantidade_estoque, nota, desconto 
-               FROM produtos 
-               WHERE ativo = 1"""
+            """SELECT p.id_produto, p.nome, c.nome, f.nome, p.preco_venda, p.quantidade_estoque, p.nota, p.desconto
+               FROM produtos AS p
+               INNER JOIN fornecedores AS f
+                   ON p.id_fornecedor = f.id_fornecedor
+               INNER JOIN categorias AS c
+                   ON p.id_categoria = c.id_categoria 
+               WHERE p.ativo = 1"""
         )
         resultados = cursor.fetchall()
         
         print("--- ESTOQUE ATUAL ---")
         for bebida in resultados:
-            id_produto, nome, id_categoria, id_fornecedor, preco_venda, quantidade_estoque, nota, desconto = bebida
+            id_produto, nome_produto, nome_categoria, nome_fornecedor, preco_venda, quantidade_estoque, nota, desconto = bebida
             
             preco_final = float(preco_venda)
             tag_promo = ""
@@ -117,7 +124,7 @@ def menu_funca(caixa_atual):
                 tag_promo = f" (-{desconto}%)"
                 
             print(
-                f"[{id_produto}] {nome}{tag_promo} | Tipo: {id_categoria} | Fornecedor: {id_fornecedor} | Nota: {nota} | R$ {preco_final:.2f} | Estoque: {quantidade_estoque}"
+                f"[{id_produto}] {nome_produto}{tag_promo} | Categoria: {nome_categoria} | Fornecedor: {nome_fornecedor} | Nota: {nota} | R$ {preco_final:.2f} | Estoque: {quantidade_estoque}"
             )
             
     except mysql.connector.Error as e:
@@ -137,17 +144,18 @@ def menu_funca(caixa_atual):
 
         ┌── PRODUTOS E ESTOQUE ──────────────────────────────────────────┐
         │ [4] Cadastrar Nova Bebida         [5] Repor Estoque            │
-        │ [6] Alterar Nome                  [7] Adicionar Cliente        │
+        │ [6] Alterar Nome                  [7] Adicionar Cliente        |
+        │ [8] Adicionar categoria                                        |
         └────────────────────────────────────────────────────────────────┘
 
         ┌── CONSULTAS E RELATÓRIOS ──────────────────────────────────────┐
-        │ [8] Buscar por Nome              [9] Catálogo Ordenado         │
-        │ [10] Filtro por Preço                                          │
+        │ [9] Busca                        [10] Catálogo Ordenado        │
+        │ [11] Filtro por Preço                                          │
         └────────────────────────────────────────────────────────────────┘
 
         ┌── MARKETING E FORNECEDORES ────────────────────────────────────┐
-        │ [11] Novo Fornecedor              [12] Cupons Mais Utilizados  |
-        │ [13] Reclame aqui                                              |
+        │ [12] Novo Fornecedor              [13] Cupons Mais Utilizados  |
+        │ [14] Reclame aqui                                              |
         └────────────────────────────────────────────────────────────────┘
 
         ┌────────────────────────────────────────────────────────────────┐

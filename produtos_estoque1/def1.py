@@ -18,16 +18,17 @@ def adicionar_item() -> None:
         print("Valor inválido!")
         return
     
-    # Validade opcional
     tem_validade = force_str("O produto tem data de validade? (S/N): ").upper()
     validade = force_str("Digite a validade (AAAA-MM-DD): ") if tem_validade == "S" else None
-
+    if len (validade) != 10:
+            print("Quantidade de caracteres inválida!")
+            return
     conexao = obter_conexao()
     cursor = conexao.cursor()
 
     try:
         print("\n--- SELECIONE A CATEGORIA ---")
-        cursor.execute("SELECT id_categoria, nome FROM categorias")
+        cursor.execute("SELECT id_categoria, nome FROM categorias WHERE ativo = 1")
         categorias = cursor.fetchall()
         
         if categorias:
@@ -39,7 +40,7 @@ def adicionar_item() -> None:
             id_categoria = 1
 
         print("\n--- SELECIONE O FORNECEDOR ---")
-        cursor.execute("SELECT id_fornecedor, nome FROM fornecedores")
+        cursor.execute("SELECT id_fornecedor, nome FROM fornecedores WHERE ativo = 1")
         fornecedores = cursor.fetchall()
 
         id_fornecedor_escolhido = None
@@ -111,7 +112,7 @@ def alterar_preco():
     try:
         # Busca o nome e o preço de venda atual na tabela produtos
         cursor.execute(
-            "SELECT nome, preco_venda FROM produtos WHERE id_produto = %s", 
+            "SELECT nome, preco_venda FROM produtos WHERE id_produto = %s AND ativo = 1", 
             (id_produto,)
         )
         bebida = cursor.fetchone()
@@ -163,7 +164,7 @@ def repor_estoque():
     try:
         # Busca o nome e o estoque atual na tabela produtos
         cursor.execute(
-            "SELECT nome, quantidade_estoque FROM produtos WHERE id_produto = %s",
+            "SELECT nome, quantidade_estoque FROM produtos WHERE id_produto = %s AND ativo = 1",
             (id_produto,),
         )
         bebida = cursor.fetchone()
@@ -177,7 +178,7 @@ def repor_estoque():
         )
 
         nova_quantidade = bebida[1] + quantidade_adicional
-
+        conexao.start_transaction()
         cursor.execute(
             """
             UPDATE produtos 
@@ -229,7 +230,7 @@ def alterar_nome():
             conexao = obter_conexao()
             cursor = conexao.cursor()
 
-            cursor.execute("SELECT nome FROM produtos WHERE id_produto = %s", (id_produto,))
+            cursor.execute("SELECT nome FROM produtos WHERE id_produto = %s AND ativo = 1", (id_produto,))
 
             produto = cursor.fetchone()
 
@@ -247,7 +248,7 @@ def alterar_nome():
             if not novo_nome:
                 print("Alteração cancelada.")
                 continue
-
+            conexao.start_transaction()
             cursor.execute(
                 """
                 UPDATE produtos
@@ -298,6 +299,7 @@ def off_prod():
             confirm = force_str(f"Tem certeza que deseja desativar {found[0]}? Para confirmar digite [s] e para cancelar [n]: ").lower()
 
             if confirm == "s" or "sim":
+                conexao.start_transaction()
                 cursor.execute("UPDATE produtos SET ativo = 0 WHERE id_produto = %s ",(id_prod,))
                 conexao.commit()
                 print("Bebida desativada do catálogo")
@@ -343,6 +345,7 @@ def atv_prod():
             confirm = force_str(f"Tem certeza que deseja ativar{found[0]}? Para confirmar digite [s] e para cancelar [n]: ").lower()
 
             if confirm in ("sim", "s"):
+                conexao.start_transaction()
                 cursor.execute("UPDATE produtos SET ativo = 1 WHERE id_produto = %s ",(id_prod,))
                 conexao.commit()
                 print("Bebida ativada no catálogo")
@@ -405,4 +408,34 @@ def add_cliente():
             fechar_execusao(
             conexao if "conexao" in locals() else None, 
             cursor if "cursor" in locals() else None
-            )         
+            )   
+def add_categoria():
+    while True:
+        print("\n----- NOVA CATEGORIA --------")
+        nome_categoria = force_str("Digite o nome da nova categoria: ").lower()
+
+        conexao = obter_conexao()
+        cursor = conexao.cursor()
+        try:
+            cursor.execute(
+                """
+                    INSERT INTO categorias(nome)
+                    VALUES (%s)
+                """,
+                (
+                    nome_categoria
+                ),
+            )
+            conexao.commit()
+            print(f"A categoria '{nome_categoria}' foi salva com sucesso! ")
+            return nome_categoria
+
+        except mysql.connector.Error as e:
+            conexao.rollback()
+            print(f"Ocorreu um erro: {e}")
+            return "Sem cliente"
+        finally:
+            fechar_execusao(
+            conexao if "conexao" in locals() else None, 
+            cursor if "cursor" in locals() else None
+            )      
