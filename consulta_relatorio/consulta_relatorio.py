@@ -8,9 +8,9 @@ from colorama import Fore, Style
 
 def relatorio_expresso():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
-{"=" * 40}
- RELATÓRIO EXPRESSO: ESTOQUE CRÍTICO 
-{"=" * 40}{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}RELATÓRIO EXPRESSO: ESTOQUE CRÍTICO{Fore.CYAN}                                          █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
 
     try:
         conexao = obter_conexao()
@@ -49,12 +49,15 @@ def relatorio_expresso():
 def busca():
     while True: 
         print(f"""{Fore.CYAN}{Style.BRIGHT}
-┌── BUSCA AVANÇADA ───────────────────────────────┐
-│ {Fore.WHITE}[1]{Fore.CYAN} Buscar por nome                             │
-│ {Fore.WHITE}[2]{Fore.CYAN} Buscar por categoria                        │
-│ {Fore.WHITE}[3]{Fore.CYAN} Buscar por fornecedor                       │
-│ {Fore.WHITE}[0]{Fore.CYAN} Sair                                        │
-└─────────────────────────────────────────────────┘{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}BUSCA AVANÇADA{Fore.CYAN}                                                      █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+
+ {Fore.WHITE}[1]{Fore.CYAN} Buscar por nome
+ {Fore.WHITE}[2]{Fore.CYAN} Buscar por categoria
+ {Fore.WHITE}[3]{Fore.CYAN} Buscar por fornecedor
+ {Fore.WHITE}[0]{Fore.CYAN} Sair
+ ══════════════════════════════════════════════════════════════════════{Fore.RESET}""")
 
         try:
             opcao = force_int(Fore.YELLOW + "➤ Digite o número da busca: " + Fore.RESET)
@@ -185,12 +188,15 @@ def busca():
 def filtros():
     while True:
         print(f"""{Fore.CYAN}{Style.BRIGHT}
-┌── FILTROS DE CONSULTA ──────────────────────────┐
-│ {Fore.WHITE}[1]{Fore.CYAN} Filtrar por Faixa de Preço                  │
-│ {Fore.WHITE}[2]{Fore.CYAN} Filtrar por Categoria                       │
-│ {Fore.WHITE}[3]{Fore.CYAN} Filtrar por Categoria + Faixa de Preço      │
-│ {Fore.WHITE}[0]{Fore.CYAN} Sair                                        │
-└─────────────────────────────────────────────────┘{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}FILTROS DE CONSULTA{Fore.CYAN}                                                █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+
+ {Fore.WHITE}[1]{Fore.CYAN} Filtrar por Faixa de Preço
+ {Fore.WHITE}[2]{Fore.CYAN} Filtrar por Categoria
+ {Fore.WHITE}[3]{Fore.CYAN} Filtrar por Categoria + Faixa de Preço
+ {Fore.WHITE}[0]{Fore.CYAN} Sair
+ ══════════════════════════════════════════════════════════════════════{Fore.RESET}""")
 
         try:
             opcao = force_int(Fore.YELLOW + "➤ Escolha uma opção: " + Fore.RESET)
@@ -339,9 +345,9 @@ def filtros():
 
 def painel_estatisticas():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
-{"="*55}
-    PAINEL DE ESTATÍSTICAS E PRODUTOS MAIS VENDIDOS    
-{"="*55}{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}PAINEL DE ESTATÍSTICAS E PRODUTOS MAIS VENDIDOS{Fore.CYAN}                                          █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     
     conexao = obter_conexao()
     cursor = conexao.cursor()
@@ -399,14 +405,17 @@ def painel_estatisticas():
 def catalogo_ordenado():
     while True:
         print(f"""{Fore.CYAN}{Style.BRIGHT}
-┌── OPÇÕES DE ORDENAÇÃO DEL CATÁLOGO ─────────────┐
-│ {Fore.WHITE}[1]{Fore.CYAN} Ordenar por Nome                            │
-│ {Fore.WHITE}[2]{Fore.CYAN} Ordenar por Maior Preço                     │
-│ {Fore.WHITE}[3]{Fore.CYAN} Ordenar por Menor Preço                     │
-│ {Fore.WHITE}[4]{Fore.CYAN} Ordenar por Maior Estoque                   │
-│ {Fore.WHITE}[5]{Fore.CYAN} Ordenar por Menor Estoque                   │
-│ {Fore.WHITE}[0]{Fore.CYAN} Sair                                        │
-└─────────────────────────────────────────────────┘{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}ORDENAÇÃO DO CATÁLOGO{Fore.CYAN}                                              █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+
+ {Fore.WHITE}[1]{Fore.CYAN} Ordenar por Nome
+ {Fore.WHITE}[2]{Fore.CYAN} Ordenar por Maior Preço
+ {Fore.WHITE}[3]{Fore.CYAN} Ordenar por Menor Preço
+ {Fore.WHITE}[4]{Fore.CYAN} Ordenar por Maior Estoque
+ {Fore.WHITE}[5]{Fore.CYAN} Ordenar por Menor Estoque
+ {Fore.WHITE}[0]{Fore.CYAN} Sair
+ ══════════════════════════════════════════════════════════════════════{Fore.RESET}""")
         
         query_base = """
                 SELECT nome, preco_venda, nota, quantidade_estoque, desconto
@@ -474,9 +483,9 @@ def catalogo_ordenado():
 
 def historico_vendas():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
-{"="*60}
-                   HISTÓRICO DE VENDAS
-{"="*60}{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}HISTÓRICO DE VENDAS{Fore.CYAN}                                          █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     
     conexao = obter_conexao()
     cursor = conexao.cursor()

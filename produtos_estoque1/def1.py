@@ -4,9 +4,10 @@ from marketing_fornecedores.marketing import cadastrar_fornecedor
 import mysql.connector
 from colorama import Fore, Style
 def adicionar_item() -> None:
-    print(Fore.CYAN + Style.BRIGHT + "\n" + "="*40)
-    print("        CADASTRAR NOVO PRODUTO        ")
-    print("="*40 + Fore.RESET)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}CADASTRAR NOVO PRODUTO{Fore.CYAN}                                            █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
 
     while True:
         nome_produto = force_str("Digite o nome do produto ou [0] para sair: ").title()
@@ -124,9 +125,10 @@ def adicionar_item() -> None:
             )
 
 def alterar_preco():
-    print(Fore.CYAN + Style.BRIGHT + "\n" + "="*40)
-    print("            ALTERAR PREÇO            ")
-    print("="*40 + Fore.RESET)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}ALTERAR PREÇO{Fore.CYAN}                                                     █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     
     try:
         id_produto = bsc_id()
@@ -175,9 +177,10 @@ def alterar_preco():
         )
 
 def repor_estoque():
-    print(Fore.CYAN + Style.BRIGHT + "\n" + "="*40)
-    print("            REPOR ESTOQUE            ")
-    print("="*40 + Fore.RESET)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}REPOR ESTOQUE{Fore.CYAN}                                                     █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     
     try:
         id_produto = bsc_id()
@@ -229,7 +232,10 @@ def repor_estoque():
 def alterar_nome():
 
     while True:
-        print(Fore.CYAN + "ALTERAR NOME" + Fore.RESET)
+        print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}ALTERAR NOME DO PRODUTO{Fore.CYAN}                                           █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
 
         try:
             id_produto = force_int("Digite o ID da bebida que deseja alterar o nome ou [0] para sair: ")
@@ -299,7 +305,10 @@ def alterar_nome():
             )
 
 def off_prod():
-    print(Fore.YELLOW + "\n Ocultar item do catálogo(Soft Delete)" + Fore.RESET)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}OCULTAR ITEM DO CATÁLOGO{Fore.CYAN}                                          █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     conexao = obter_conexao()
     cursor = conexao.cursor()
     while True:
@@ -344,7 +353,10 @@ def off_prod():
             )        
 
 def atv_prod():
-    print(Fore.CYAN + "\n Ativar bebida no catálogo" + Fore.RESET)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}ATIVAR ITEM NO CATÁLOGO{Fore.CYAN}                                           █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     conexao = obter_conexao()
     cursor = conexao.cursor()
     while True:
@@ -390,7 +402,10 @@ def atv_prod():
 
 def add_cliente():
     while True:
-        print(Fore.CYAN + Style.BRIGHT + "\n----- NOVO CLIENTE --------" + Fore.RESET)
+        print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}CADASTRAR NOVO CLIENTE{Fore.CYAN}                                            █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
         nome_cliente = force_str("Digite o nome do novo cliente ou [0] para sair: ").lower()
         if nome_cliente == '0':
             print("Voltando ao menu")
@@ -446,7 +461,10 @@ def add_cliente():
             )   
 def add_categoria():
     while True:
-        print(Fore.CYAN + Style.BRIGHT + "\n----- NOVA CATEGORIA --------" + Fore.RESET)
+        print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}CADASTRAR NOVA CATEGORIA{Fore.CYAN}                                          █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
         nome_categoria = force_str("Digite o nome da nova categoria ou [0] para sair: ").lower()
         if nome_categoria == '0':
             print("Voltando ao menu")

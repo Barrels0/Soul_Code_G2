@@ -9,11 +9,15 @@ def perguntar_exportacao(df, nome_padrao="relatorio"):
     if df.empty:
         return 
 
-    print(f"""{Fore.CYAN}┌── EXPORTAR RESULTADOS ──────────────────────────┐
-│ {Fore.WHITE}[1]{Fore.CYAN} Sim, em CSV (Abre no Excel)                 │
-│ {Fore.WHITE}[2]{Fore.CYAN} Sim, em TXT (Bloco de Notas)                 │
-│ {Fore.WHITE}[0]{Fore.CYAN} Não, voltar ao menu                         │
-└─────────────────────────────────────────────────┘{Fore.RESET}""")
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}EXPORTAR RESULTADOS{Fore.CYAN}                                                 █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+
+ {Fore.WHITE}[1]{Fore.CYAN} Sim, em CSV (Abre no Excel)
+ {Fore.WHITE}[2]{Fore.CYAN} Sim, em TXT (Bloco de Notas)
+ {Fore.WHITE}[0]{Fore.CYAN} Não, voltar ao menu
+ ══════════════════════════════════════════════════════════════════════{Fore.RESET}""")
     
     escolha = force_int(Fore.YELLOW + "➤ Sua escolha: " + Fore.RESET)
     

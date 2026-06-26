@@ -44,14 +44,15 @@ while True:
     try:
         # Menu principal redesenhado para ficar mais bonito e profissional
         print(f"""{Fore.CYAN}{Style.BRIGHT}
-╔═════════════════════════════════════════════════╗
-║       Seja bem-vindo à Distribuidora G2!        ║
-╠═════════════════════════════════════════════════╣
-║  {Fore.WHITE}[1]{Fore.CYAN} Criar novo usuário                         ║
-║  {Fore.WHITE}[2]{Fore.CYAN} Fazer Login                                ║
-║  {Fore.WHITE}[3]{Fore.CYAN} Recuperar Senha                            ║
-║  {Fore.WHITE}[0]{Fore.CYAN} Sair do sistema                            ║
-╚═════════════════════════════════════════════════╝{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}BEM-VINDO À DISTRIBUIDORA G2{Fore.CYAN}                                      █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+
+ {Fore.WHITE}[1]{Fore.CYAN} Criar novo usuário
+ {Fore.WHITE}[2]{Fore.CYAN} Fazer Login
+ {Fore.WHITE}[3]{Fore.CYAN} Recuperar Senha
+ {Fore.WHITE}[0]{Fore.CYAN} Sair do sistema
+ ══════════════════════════════════════════════════════════════════════{Fore.RESET}""")
         
         escolha = force_int(
             Fore.YELLOW + "➤ Selecione uma das opções acima: " + Fore.RESET

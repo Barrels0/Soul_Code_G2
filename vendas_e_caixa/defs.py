@@ -97,9 +97,10 @@ def exp_nota(id_operador):
 
 
 def nota_fiscal():
-    print(Fore.CYAN + Style.BRIGHT + "\n╔═════════════════════════════════════════════════╗")
-    print(Fore.CYAN + Style.BRIGHT + "║                   NOTA FISCAL                   ║")
-    print(Fore.CYAN + Style.BRIGHT + "╚═════════════════════════════════════════════════╝" + Fore.RESET)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}NOTA FISCAL{Fore.CYAN}                                                       █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     conexao = obter_conexao()
     cursor = conexao.cursor()
 
@@ -133,7 +134,10 @@ def nota_fiscal():
 
 
 def registar_venda(id_operador):
-    print(Fore.CYAN + Style.BRIGHT + "\n====== CARRINHO DE COMPRAS ======")
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}CARRINHO DE COMPRAS{Fore.CYAN}                                               █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     carrinho = []
 
     while True:
@@ -292,7 +296,10 @@ def registar_venda(id_operador):
         )
     total_compra = sum(item["subtotal_promocional"] for item in carrinho)
 
-    print(Fore.CYAN + Style.BRIGHT + f"\n============= FECHAMENTO DE CAIXA ==============")
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}FECHAMENTO DE CAIXA{Fore.CYAN}                                               █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     print(Fore.WHITE + f"Total a pagar: " + Fore.GREEN + f"R$ {total_compra:.2f}")
     confirmar = force_str(Fore.YELLOW + "Confirmar pagamento e registrar venda? (S/N): " + Fore.RESET).upper()
     if confirmar not in ["S", "SIM"]:

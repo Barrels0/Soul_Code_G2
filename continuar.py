@@ -5,10 +5,14 @@ from colorama import Fore, Style
 # Importar o menu
 def continuar_sistema_a():
     while True:
-        print(f"""{Fore.CYAN}┌────────────────────────────────┐
-│ {Fore.WHITE}[1]{Fore.CYAN} Voltar ao Menu Principal   │
-│ {Fore.WHITE}[2]{Fore.CYAN} Sair do Sistema            │
-└────────────────────────────────┘{Fore.RESET}""")
+        print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}O QUE DESEJA FAZER AGORA?{Fore.CYAN}                                         █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+ 
+   {Fore.WHITE}[1]{Fore.CYAN} Voltar ao Menu Principal
+   {Fore.WHITE}[2]{Fore.CYAN} Sair do Sistema{Fore.RESET}
+""")
         try:
             acao_pos_comando = force_int(Fore.YELLOW + "➤ Escolha uma ação: " + Fore.RESET)
             if acao_pos_comando == 1:
@@ -22,10 +26,14 @@ def continuar_sistema_a():
 
 def continuar_sistema_f():
     while True:
-        print(f"""{Fore.CYAN}┌────────────────────────────────┐
-│ {Fore.WHITE}[1]{Fore.CYAN} Voltar ao Menu Principal   │
-│ {Fore.WHITE}[2]{Fore.CYAN} Sair do Sistema            │
-└────────────────────────────────┘{Fore.RESET}""")
+        print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}O QUE DESEJA FAZER AGORA?{Fore.CYAN}                                         █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+ 
+   {Fore.WHITE}[1]{Fore.CYAN} Voltar ao Menu Principal
+   {Fore.WHITE}[2]{Fore.CYAN} Sair do Sistema{Fore.RESET}
+""")
         try:
             acao_pos_comando = force_int(Fore.YELLOW + "➤ Escolha uma ação: " + Fore.RESET)
             if acao_pos_comando == 1:

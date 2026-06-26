@@ -36,7 +36,10 @@ def abrir_dashboard():
         
         
 def cadastrar_fornecedor():
-    print(Fore.CYAN + Style.BRIGHT + "\n════════ CADASTRAR NOVO FORNECEDOR ════════" + Fore.RESET)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}CADASTRAR NOVO FORNECEDOR{Fore.CYAN}                                          █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     nome = force_str("➤ Nome da empresa/fornecedor: ")
     pais = force_str("➤ País de origem: ")
     estado = force_str("➤ Estado (UF): ")
@@ -81,7 +84,10 @@ def cadastrar_fornecedor():
             conexao.close()
 
 def cadastrar_cupom():
-    print(Fore.CYAN + Style.BRIGHT + "\n════════ CADASTRAR NOVO CUPOM ════════" + Fore.RESET)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}CADASTRAR NOVO CUPOM{Fore.CYAN}                                          █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     nome_cupom = force_str("➤ Digite o código do cupom (Ex: PROMO10): ").upper()
 
     if not nome_cupom:
@@ -138,15 +144,16 @@ def cadastrar_cupom():
 def promocoes():
     while True:
         print(f"""{Fore.CYAN}{Style.BRIGHT}
-{"=" * 40}
-          MENU DE PROMOÇÕES          
-{"=" * 40}
-        [1] Aplicar/Alterar desconto em um único item
-        [2] Aplicar desconto para TODOS os itens
-        [3] Aplicar desconto por Categoria
-        [4] REMOVER desconto de TODOS os itens
-        [0] Voltar
-{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}MENU DE PROMOÇÕES{Fore.CYAN}                                                  █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+
+ {Fore.WHITE}[1]{Fore.CYAN} Aplicar/Alterar desconto em um único item
+ {Fore.WHITE}[2]{Fore.CYAN} Aplicar desconto para TODOS os itens
+ {Fore.WHITE}[3]{Fore.CYAN} Aplicar desconto por Categoria
+ {Fore.WHITE}[4]{Fore.CYAN} REMOVER desconto de TODOS os itens
+ {Fore.WHITE}[0]{Fore.CYAN} Voltar
+ ══════════════════════════════════════════════════════════════════════{Fore.RESET}""")
 
         escolha_promo = force_int(Fore.YELLOW + "\nEscolha uma opção: " + Fore.RESET)
 
@@ -275,8 +282,10 @@ def promocoes():
             continue
 
 def relatorio_cupons_mais_utilizados():
-    print(Fore.CYAN + Style.BRIGHT + "\nRANKING: CUPONS MAIS UTILIZADOS" + Fore.RESET)
-    print("-" * 40)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}RANKING: CUPONS MAIS UTILIZADOS{Fore.CYAN}                                          █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
 
     try:
         conexao = obter_conexao()
@@ -331,13 +340,13 @@ def relatorio_cupons_mais_utilizados():
 def reclame_aqui(id_operador):
     while True:
         print(f"""{Fore.CYAN}{Style.BRIGHT}
-{"=" * 50}
-                 RECLAME AQUI                 
-{"=" * 50}
-{Fore.WHITE}Utilize este canal para nos enviar críticas,
-dicas ou sugestões de melhoria para o sistema.
-{"-" * 50}
-{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}RECLAME AQUI{Fore.CYAN}                                                       █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+ 
+ {Fore.WHITE}Utilize este canal para nos enviar críticas,
+ dicas ou sugestões de melhoria para o sistema.
+ ──────────────────────────────────────────────────────────────────────{Fore.RESET}""")
         assunto = force_str(Fore.YELLOW + "➤ Digite o assunto da mensagem: " + Fore.RESET)
         resposta = force_str(Fore.YELLOW + "➤ Digite sua mensagem (ou '0' para sair): \n> " + Fore.RESET)
         
@@ -361,9 +370,10 @@ dicas ou sugestões de melhoria para o sistema.
             break
 
 def teste_qualidade(id_produto):
-    print(Fore.CYAN + Style.BRIGHT + "\n" + "=" * 40)
-    print("      TESTE DE QUALIDADE (AVALIAÇÃO)      ")
-    print("=" * 40 + Fore.RESET)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}TESTE DE QUALIDADE (AVALIAÇÃO){Fore.CYAN}                                          █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
 
     conexao = obter_conexao()
     cursor = conexao.cursor()

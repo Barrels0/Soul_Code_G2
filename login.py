@@ -25,9 +25,9 @@ def email_valido(email):
 
 def new_user():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
-╔═════════════════════════════════════════════════╗
-║                CADASTRAR NOVO USUÁRIO           ║
-╚═════════════════════════════════════════════════╝{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}CADASTRAR NOVO USUÁRIO{Fore.CYAN}                                            █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     conexao = obter_conexao()
     cursor = conexao.cursor()
     try:
@@ -113,9 +113,9 @@ def new_user():
 
 def login():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
-╔═════════════════════════════════════════════════╗
-║                   FAZER LOGIN                   ║
-╚═════════════════════════════════════════════════╝{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}FAZER LOGIN{Fore.CYAN}                                                       █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     conexao = obter_conexao()
     cursor = conexao.cursor()
     try:
@@ -165,13 +165,14 @@ def login():
 
 def recuperar_senha(id_operador):
     print(f"""{Fore.CYAN}{Style.BRIGHT}
-╔═════════════════════════════════════════════════╗
-║               RECUPERAÇÃO DE SENHA              ║
-╠═════════════════════════════════════════════════╣
-║ {Fore.WHITE}Esqueceu sua senha? Não se preocupe!            {Fore.CYAN}║
-║ {Fore.WHITE}Vamos enviar um código de segurança de 8 dígitos{Fore.CYAN}║
-║ {Fore.WHITE}para o seu e-mail ou WhatsApp cadastrado.       {Fore.CYAN}║
-╚═════════════════════════════════════════════════╝{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}RECUPERAÇÃO DE SENHA{Fore.CYAN}                                              █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+ 
+ {Fore.WHITE}Esqueceu sua senha? Não se preocupe!
+ Vamos enviar um código de segurança de 8 dígitos
+ para o seu e-mail ou WhatsApp cadastrado.{Fore.RESET}
+""")
 
     escolha = force_int(Fore.YELLOW + "➤ Como deseja receber o código? [1] E-mail | [2] WhatsApp: " + Fore.RESET)
     if escolha == 1:
