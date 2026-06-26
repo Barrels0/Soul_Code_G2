@@ -1,14 +1,16 @@
-from connectsql import obter_conexao
-import datetime
 import mysql.connector
-from forces import force_int,force_float,force_str
-from consulta_relatorio.exportacoes import perguntar_exportacao
+import datetime
 import pandas as pd
+from connectsql import obter_conexao
+from forces import force_int, force_float, force_str, bsc_id
+from consulta_relatorio.exportacoes import perguntar_exportacao
+from colorama import Fore, Style
 
 def relatorio_expresso():
-    print("\n" + "="*40)
-    print(" RELATÓRIO EXPRESSO: ESTOQUE CRÍTICO ")
-    print("="*40)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+{"=" * 40}
+ RELATÓRIO EXPRESSO: ESTOQUE CRÍTICO 
+{"=" * 40}{Fore.RESET}""")
 
     try:
         conexao = obter_conexao()
@@ -16,7 +18,6 @@ def relatorio_expresso():
         if not conexao:
             return
 
-        
         query = """
             SELECT id_produto AS 'ID', 
                    nome AS 'Produto', 
@@ -25,23 +26,18 @@ def relatorio_expresso():
             WHERE quantidade_estoque < 5 AND ativo = 1
             ORDER BY quantidade_estoque ASC
         """
-
         
         df_critico = pd.read_sql(query, conexao)
 
         if df_critico.empty:
-            print("Estoque seguro! Nenhuma bebida com menos de 5 unidades.")
+            print(Fore.GREEN + "Estoque seguro! Nenhuma bebida com menos de 5 unidades." + Fore.RESET)
         else:
-            print("\nATENÇÃO! Produtos precisando de reposição urgente:\n")
-            
-            
+            print(Fore.YELLOW + "\nATENÇÃO! Produtos precisando de reposição urgente:\n" + Fore.RESET)
             print(df_critico.to_string(index=False))
-            
-            
             perguntar_exportacao(df_critico, nome_padrao="relatorio_estoque_critico")
 
     except Exception as erro:
-        print(f"Erro inesperado ao gerar o relatório expresso: {erro}")
+        print(Fore.RED + f"Erro inesperado ao gerar o relatório expresso: {erro}" + Fore.RESET)
 
     finally:
         if "conexao" in locals() and conexao.is_connected():
@@ -51,31 +47,40 @@ def relatorio_expresso():
 
 
 def busca():
-
-    print("\n--- BUSCA AVANÇADA ---")
-
-    print("""
-    [1] Buscar por nome
-    [2] Buscar por categoria
-    [3] Buscar por fornecedor
-    """)
-
-    try:
-        opcao = force_int(
-            "Digite o número da busca: "
-        )
-
-        conexao = obter_conexao()
-        cursor = conexao.cursor()
+    while True: 
+        print(f"""{Fore.CYAN}{Style.BRIGHT}
+┌── BUSCA AVANÇADA ───────────────────────────────┐
+│ {Fore.WHITE}[1]{Fore.CYAN} Buscar por nome                             │
+│ {Fore.WHITE}[2]{Fore.CYAN} Buscar por categoria                        │
+│ {Fore.WHITE}[3]{Fore.CYAN} Buscar por fornecedor                       │
+│ {Fore.WHITE}[0]{Fore.CYAN} Sair                                        │
+└─────────────────────────────────────────────────┘{Fore.RESET}""")
 
         try:
+            opcao = force_int(Fore.YELLOW + "➤ Digite o número da busca: " + Fore.RESET)
+        except ValueError:
+            print(Fore.RED + "Digite apenas números" + Fore.RESET)
+            continue
 
+        if opcao == 0:
+            print("Voltando ao menu...")
+            break
+            
+        if opcao not in [1, 2, 3]:
+            print(Fore.RED + "Opção inválida. Tente novamente." + Fore.RESET)
+            continue
+
+        conexao = obter_conexao()
+        if conexao is None:
+            print(Fore.RED + "Erro ao conectar ao banco." + Fore.RESET)
+            return
+            
+        cursor = conexao.cursor()
+        resultados = []
+
+        try:
             if opcao == 1:
-
-                nome = force_str(
-                    "Digite o nome da bebida: "
-                ).lower()
-
+                nome = force_str(Fore.YELLOW + "➤ Digite o nome da bebida: " + Fore.RESET).lower()
                 cursor.execute("""
                     SELECT
                         produtos.nome,
@@ -90,18 +95,24 @@ def busca():
                         ON produtos.id_categoria = categorias.id_categoria
                     WHERE LOWER(produtos.nome) LIKE %s
                     AND produtos.ativo = 1
-                """, (
-
-                    f"%{nome}%",
-
-                ))
+                """, (f"%{nome}%",))
+                resultados = cursor.fetchall()
 
             elif opcao == 2:
-
-                categoria = force_str(
-                    "Digite a categoria (exemplo: Cervejas, Refrigerantes, etc...): "
-                ).lower()
-
+                cursor.execute("SELECT id_categoria, nome FROM categorias WHERE ativo = 1")
+                categorias = cursor.fetchall()
+                    
+                for i in categorias:
+                    print(Fore.WHITE + f"[{i[0]}] - {i[1]}" + Fore.RESET)
+                try:
+                    categoria = force_int(Fore.YELLOW + "➤ Digite o número da categoria correspondente (ou [0] para sair): " + Fore.RESET)
+                except ValueError:
+                    print("Digite apenas números")
+                    continue
+                if categoria == 0:
+                    print("Voltando ao menu")
+                    break
+                        
                 cursor.execute("""
                     SELECT
                         produtos.nome,
@@ -114,20 +125,25 @@ def busca():
                         ON produtos.id_fornecedor = fornecedores.id_fornecedor
                     INNER JOIN categorias
                         ON produtos.id_categoria = categorias.id_categoria
-                    WHERE LOWER(categorias.nome) LIKE %s
+                    WHERE categorias.id_categoria = %s
                     AND produtos.ativo = 1
-                """, (
-
-                    f"%{categoria}%",
-
-                ))
+                """, (categoria,))
+                resultados = cursor.fetchall()
 
             elif opcao == 3:
-
-                fornecedor = force_str(
-                    "Digite o fornecedor: "
-                ).lower()
-
+                cursor.execute("SELECT id_fornecedor, nome FROM fornecedores WHERE ativo = 1")
+                fornecedores = cursor.fetchall()
+                    
+                for i in fornecedores:
+                    print(Fore.WHITE + f"[{i[0]}] - {i[1]}" + Fore.RESET)
+                try:
+                    fornecedor = force_int(Fore.YELLOW + "➤ Digite o número do fornecedor correspondente (ou [0] para sair): " + Fore.RESET)
+                except ValueError:
+                    print("Digite apenas números")
+                    continue
+                if categoria == 0:
+                    print("Voltando ao menu")
+                    break
                 cursor.execute("""
                     SELECT
                         produtos.nome,
@@ -140,177 +156,192 @@ def busca():
                         ON produtos.id_fornecedor = fornecedores.id_fornecedor
                     INNER JOIN categorias
                         ON produtos.id_categoria = categorias.id_categoria
-                    WHERE LOWER(fornecedores.nome) LIKE %s
+                    WHERE fornecedores.id_fornecedor = %s
                     AND produtos.ativo = 1
-                """, (
-
-                    f"%{fornecedor}%",
-
-                ))
-
-            else:
-
-                print("Opção inválida.")
-                return
-
-            resultados = cursor.fetchall()
+                """, (fornecedor,))
+                resultados = cursor.fetchall()
 
             if len(resultados) == 0:
-
-                print("\nNenhuma bebida encontrada.")
-
+                print(Fore.YELLOW + "\nNenhuma bebida encontrada." + Fore.RESET)
             else:
-
-                print("\nRESULTADOS:\n")
-
+                print(Fore.GREEN + "\n--- RESULTADOS ---\n" + Fore.RESET)
                 for bebida in resultados:
-
                     print(
-                        f"{bebida[0]} | "
-                        f"{bebida[1]} | "
-                        f"{bebida[2]} | "
-                        f"R$ {bebida[3]:.2f} | "
-                        f"Estoque: {bebida[4]}"
+                        f"{bebida[0]} | {bebida[1]} | {bebida[2]} | {Fore.GREEN}R$ {bebida[3]:.2f}{Fore.RESET} | Estoque: {bebida[4]}"
                     )
 
         except mysql.connector.Error as e:
-
-            print(
-                f"Erro ao realizar a busca: {e}"
-            )
+            print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
+            
+        except Exception as i:
+            print(Fore.RED + f"Erro inesperado: {i}" + Fore.RESET)
 
         finally:
-
             if "conexao" in locals() and conexao.is_connected():
-
                 cursor.close()
                 conexao.close()
-
-    except Exception as i :
-        print(f"Erro inesperado... {i}")
-
 
 
 def filtros():
-    print("\n--- FILTROS ---")
-    print("""
-    [1] Faixa de preço
-    [2] Categoria
-    [3] Categoria + faixa de preço
-    """)
-
-    try:
-        opcao = force_int("Escolha: ")
-        conexao = obter_conexao()
-
-        if conexao is None:
-            print("Erro ao conectar ao banco.")
-            return
-
-        cursor = conexao.cursor()
+    while True:
+        print(f"""{Fore.CYAN}{Style.BRIGHT}
+┌── FILTROS DE CONSULTA ──────────────────────────┐
+│ {Fore.WHITE}[1]{Fore.CYAN} Filtrar por Faixa de Preço                  │
+│ {Fore.WHITE}[2]{Fore.CYAN} Filtrar por Categoria                       │
+│ {Fore.WHITE}[3]{Fore.CYAN} Filtrar por Categoria + Faixa de Preço      │
+│ {Fore.WHITE}[0]{Fore.CYAN} Sair                                        │
+└─────────────────────────────────────────────────┘{Fore.RESET}""")
 
         try:
-            if opcao == 1:
-                preco_minimo = force_float("Preço mínimo: R$ ")
-                preco_maximo = force_float("Preço máximo: R$ ")
+            opcao = force_int(Fore.YELLOW + "➤ Escolha uma opção: " + Fore.RESET)
+            conexao = obter_conexao()
 
-                cursor.execute("""
-                    SELECT
-                        produtos.nome,
-                        categorias.nome,
-                        produtos.preco_venda,
-                        produtos.quantidade_estoque,
-                        produtos.desconto
-                    FROM produtos
-                    INNER JOIN categorias
-                        ON produtos.id_categoria = categorias.id_categoria
-                    WHERE produtos.preco_venda >= %s
-                    AND produtos.preco_venda <= %s
-                    AND produtos.ativo = 1
-                """, (preco_minimo, preco_maximo))
-
-            elif opcao == 2:
-                categoria = force_str("Digite a categoria: ").lower()
-
-                cursor.execute("""
-                    SELECT
-                        produtos.nome,
-                        categorias.nome,
-                        produtos.preco_venda,
-                        produtos.quantidade_estoque,
-                        produtos.desconto
-                    FROM produtos
-                    INNER JOIN categorias
-                        ON produtos.id_categoria = categorias.id_categoria
-                    WHERE LOWER(categorias.nome) LIKE %s
-                    AND produtos.ativo = 1
-                """, (f"%{categoria}%",))
-
-            elif opcao == 3:
-                categoria = force_str("Digite a categoria: ").lower()
-                preco_minimo = force_float("Preço mínimo: R$ ")
-                preco_maximo = force_float("Preço máximo: R$ ")
-
-                cursor.execute("""
-                    SELECT
-                        produtos.nome,
-                        categorias.nome,
-                        produtos.preco_venda,
-                        produtos.quantidade_estoque,
-                        produtos.desconto
-                    FROM produtos
-                    INNER JOIN categorias
-                        ON produtos.id_categoria = categorias.id_categoria
-                    WHERE LOWER(categorias.nome) LIKE %s
-                    AND produtos.preco_venda >= %s
-                    AND produtos.preco_venda <= %s
-                    AND produtos.ativo = 1
-                """, (f"%{categoria}%", preco_minimo, preco_maximo))
-
-            else:
-                print("Opção inválida.")
+            if conexao is None:
+                print(Fore.RED + "Erro ao conectar ao banco." + Fore.RESET)
                 return
 
-            bebidas = cursor.fetchall()
+            cursor = conexao.cursor()
 
-            if len(bebidas) == 0:
-                print("\nNenhuma bebida encontrada.")
-            else:
-                print("\nRESULTADOS:\n")
+            try:
+                if opcao == 0:
+                    print("Saindo dos filtros e voltando ao menu principal...")
+                    break # Encerra o laço While True
 
-                for bebida in bebidas:
-                    preco_venda = bebida[2]
-                    desconto = bebida[4]
+                elif opcao == 1:
+                    try:
+                        preco_minimo = force_float("➤ Preço mínimo: R$ ")
+                        preco_maximo = force_float("➤ Preço máximo: R$ ")
+                        confirm = force_int(Fore.YELLOW + "➤ Para buscar digite [1] ou [0] para cancelar: " + Fore.RESET)
+                    except ValueError:
+                        print(Fore.RED + "Digite apenas números!" + Fore.RESET)
+                        continue # Volta pro topo do laço
+                        
+                    if confirm == 0:
+                        print("Filtro cancelado. Voltando ao menu...")
+                        continue
+
+                    cursor.execute("""
+                        SELECT
+                            produtos.nome,
+                            categorias.nome,
+                            produtos.preco_venda,
+                            produtos.quantidade_estoque,
+                            produtos.desconto
+                        FROM produtos
+                        INNER JOIN categorias
+                            ON produtos.id_categoria = categorias.id_categoria
+                        WHERE produtos.preco_venda >= %s
+                        AND produtos.preco_venda <= %s
+                        AND produtos.ativo = 1
+                    """, (preco_minimo, preco_maximo))
+
+                elif opcao == 2:
+                    cursor.execute("SELECT id_categoria, nome FROM categorias WHERE ativo = 1")
+                    categorias = cursor.fetchall()
                     
-                    preco_final = float(preco_venda)
-                    tag_promo = ""
+                    for i in categorias:
+                        print(Fore.WHITE + f"[{i[0]}] - {i[1]}" + Fore.RESET)
+                        
+                    try:   
+                        categoria_id = force_int(Fore.YELLOW + "➤ Digite o [ID] da categoria (ou [0] para cancelar): " + Fore.RESET)
+                    except ValueError:
+                        print(Fore.RED + "Digite apenas números!" + Fore.RESET)
+                        continue
+
+                    if categoria_id == 0:
+                        print("Filtro cancelado. Voltando ao menu...")
+                        continue
+                    else:
+                        cursor.execute("""
+                            SELECT
+                                produtos.nome,
+                                categorias.nome,
+                                produtos.preco_venda,
+                                produtos.quantidade_estoque,
+                                produtos.desconto
+                            FROM produtos
+                            INNER JOIN categorias
+                                ON produtos.id_categoria = categorias.id_categoria
+                            WHERE categorias.id_categoria = %s
+                            AND produtos.ativo = 1
+                        """, (categoria_id,))
+
+                elif opcao == 3:
+                    cursor.execute("SELECT id_categoria, nome FROM categorias WHERE ativo = 1")
+                    categorias = cursor.fetchall()
                     
-                    if desconto and float(desconto) > 0:
-                        preco_final = float(preco_venda) - (float(preco_venda) * (float(desconto) / 100))
-                        tag_promo = f" (-{desconto}%) | PROMO: R$ {preco_final:.2f}"
+                    for i in categorias:
+                        print(Fore.WHITE + f"[{i[0]}] - {i[1]}" + Fore.RESET)
+                        
+                    try:
+                        categoria_id = force_int(Fore.YELLOW + "➤ Digite o [ID] da categoria (ou [0] para cancelar): " + Fore.RESET)
+                        if categoria_id == 0:
+                            print(Fore.YELLOW + "\n[!] Filtro cancelado. Voltando..." + Fore.RESET)
+                            continue
+                            
+                        preco_minimo = force_float("➤ Preço mínimo: R$ ")
+                        preco_maximo = force_float("➤ Preço máximo: R$ ")
+                    except ValueError:
+                        print(Fore.RED + "Digite apenas números!" + Fore.RESET)
+                        continue
 
-                    print(
-                        f"{bebida[0]} | "
-                        f"{bebida[1]} | "
-                        f"R$ {bebida[2]:.2f}{tag_promo} | "
-                        f"Estoque: {bebida[3]}"
-                    )
+                    cursor.execute("""
+                        SELECT
+                            produtos.nome,
+                            categorias.nome,
+                            produtos.preco_venda,
+                            produtos.quantidade_estoque,
+                            produtos.desconto
+                        FROM produtos
+                        INNER JOIN categorias
+                            ON produtos.id_categoria = categorias.id_categoria
+                        WHERE categorias.id_categoria = %s
+                        AND produtos.preco_venda >= %s
+                        AND produtos.preco_venda <= %s
+                        AND produtos.ativo = 1
+                    """, (categoria_id, preco_minimo, preco_maximo))
 
-        except mysql.connector.Error as e:
-            print(f"Erro no banco: {e}")
+                else:
+                    print(Fore.RED + "Opção inválida. Tente novamente." + Fore.RESET)
+                    continue
 
-        finally:
-            if conexao.is_connected():
-                cursor.close()
-                conexao.close()
+                bebidas = cursor.fetchall()
+
+                if len(bebidas) == 0:
+                    print(Fore.YELLOW + "\nNenhuma bebida encontrada com esses filtros." + Fore.RESET)
+                else:
+                    print(Fore.GREEN + "\n--- RESULTADOS ---\n" + Fore.RESET)
+                    for bebida in bebidas:
+                        preco_venda = bebida[2]
+                        desconto = bebida[4]
+                        
+                        preco_final = float(preco_venda)
+                        tag_promo = ""
+                        
+                        if desconto and float(desconto) > 0:
+                            preco_final = float(preco_venda) - (float(preco_venda) * (float(desconto) / 100))
+                            tag_promo = f" (-{desconto}%) | PROMO: {Fore.GREEN}R$ {preco_final:.2f}{Fore.RESET}"
+                        
+                        print(
+                            f"{bebida[0]} | {bebida[1]} | {Fore.GREEN}R$ {bebida[2]:.2f}{Fore.RESET}{tag_promo} | Estoque: {bebida[3]}"
+                        )
+
+            except mysql.connector.Error as e:
+                print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
+
+            finally:
+                if 'conexao' in locals() and conexao.is_connected():
+                    cursor.close()
+                    conexao.close()
                 
-    except Exception as i:
-        print(f"Erro inesperado... {i}")
+        except Exception as i:
+            print(Fore.RED + f"Erro inesperado: {i}" + Fore.RESET)
 
 def painel_estatisticas():
-    print("\n" + "="*55)
-    print("    PAINEL DE ESTATÍSTICAS E PRODUTOS MAIS VENDIDOS    ")
-    print("="*55)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+{"="*55}
+    PAINEL DE ESTATÍSTICAS E PRODUTOS MAIS VENDIDOS    
+{"="*55}{Fore.RESET}""")
     
     conexao = obter_conexao()
     cursor = conexao.cursor()
@@ -318,18 +349,18 @@ def painel_estatisticas():
     try:
         cursor.execute("SELECT COUNT(*) FROM vendas")
         if cursor.fetchone()[0] == 0:
-            print("-> Sem dados disponíveis para gerar o balanço hoje!")
+            print(Fore.YELLOW + "-> Sem dados disponíveis para gerar o balanço hoje!" + Fore.RESET)
             return
 
         cursor.execute("SELECT SUM(valor_total) FROM vendas")
         faturamento = cursor.fetchone()[0]
-        print(f"Histórico de Faturação Bruta : R$ {faturamento:.2f}")
+        print(f"Histórico de Faturação Bruta : {Fore.GREEN}R$ {faturamento:.2f}{Fore.RESET}")
 
         cursor.execute("SELECT AVG(valor_total) FROM vendas")
         ticket_medio = cursor.fetchone()[0]
-        print(f"Ticket Médio por venda       : R$ {ticket_medio:.2f}")
+        print(f"Ticket Médio por venda       : {Fore.GREEN}R$ {ticket_medio:.2f}{Fore.RESET}")
 
-        print("\nTOP 3 BEBIDAS MAIS VENDIDAS:")
+        print(Fore.CYAN + "\nTOP 3 BEBIDAS MAIS VENDIDAS:" + Fore.RESET)
         cursor.execute("""
             SELECT produtos.nome, SUM(itens_venda.quantidade) AS total_vendido
             FROM itens_venda
@@ -355,65 +386,56 @@ def painel_estatisticas():
         if pagamento_fav:
             print(f"\nMétodo de Pagamento Favorito : {pagamento_fav[0]} ({pagamento_fav[1]} operações)")
 
-        print("="*55)
+        print(Fore.CYAN + "="*55 + Fore.RESET)
 
     except mysql.connector.Error as e:
-        print(f"\nOcorreu um erro ao gerar as estatísticas: {e}")
+        print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
     finally:
         if "conexao" in locals() and conexao.is_connected():
             cursor.close()
             conexao.close()
 
 
-
-
 def catalogo_ordenado():
-    print("\n--- CATÁLOGO ORDENADO ---")
     while True:
-        print("""
-    [1] Nome
-            
-    [2] Maior preço          
-            
-    [3] Menor preço         
-            
-    [4] Maior estoque          
-            
-    [5] Menor estoque
-
-    [0] Sair          
-            """)
+        print(f"""{Fore.CYAN}{Style.BRIGHT}
+┌── OPÇÕES DE ORDENAÇÃO DEL CATÁLOGO ─────────────┐
+│ {Fore.WHITE}[1]{Fore.CYAN} Ordenar por Nome                            │
+│ {Fore.WHITE}[2]{Fore.CYAN} Ordenar por Maior Preço                     │
+│ {Fore.WHITE}[3]{Fore.CYAN} Ordenar por Menor Preço                     │
+│ {Fore.WHITE}[4]{Fore.CYAN} Ordenar por Maior Estoque                   │
+│ {Fore.WHITE}[5]{Fore.CYAN} Ordenar por Menor Estoque                   │
+│ {Fore.WHITE}[0]{Fore.CYAN} Sair                                        │
+└─────────────────────────────────────────────────┘{Fore.RESET}""")
         
-        # Puxa os dados base do banco (incluindo a coluna de desconto)
-        query = """
+        query_base = """
                 SELECT nome, preco_venda, nota, quantidade_estoque, desconto
                 FROM produtos
                 WHERE ativo = 1
             """
         
         try:
-            escolha = force_int("\nEscolha: ")
+            escolha = force_int(Fore.YELLOW + "➤ Escolha o tipo de ordenação: " + Fore.RESET)
         except ValueError:
-            print("Digite apenas números na sua escolha")
+            print(Fore.RED + "Digite apenas números na sua escolha" + Fore.RESET)
             continue
             
         if escolha == 0:
-            print("Voltando ao menu")
+            print(Fore.YELLOW + "Voltando ao menu" + Fore.RESET)
             break
 
-        # Monta o resto da query de acordo com o filtro escolhido
-        elif escolha == 1:
-            query = f"{query} ORDER BY LOWER(nome) ASC"
+        if escolha == 1:
+            query = f"{query_base} ORDER BY LOWER(nome) ASC"
         elif escolha == 2:
-            query = f"{query} ORDER BY preco_venda DESC"
+            query = f"{query_base} ORDER BY preco_venda DESC"
         elif escolha == 3:  
-            query = f"{query} ORDER BY preco_venda ASC"
+            query = f"{query_base} ORDER BY preco_venda ASC"
         elif escolha == 4:
-            query = f"{query} ORDER BY quantidade_estoque DESC"
+            query = f"{query_base} ORDER BY quantidade_estoque DESC"
         elif escolha == 5:
-            query = f"{query} ORDER BY quantidade_estoque ASC"         
+            query = f"{query_base} ORDER BY quantidade_estoque ASC"        
         else:
-            print("Opção inválida")
+            print(Fore.RED + "Opção inválida" + Fore.RESET)
             continue
         
         try:
@@ -422,55 +444,44 @@ def catalogo_ordenado():
             cursor.execute(query)
             bebidas = cursor.fetchall()
 
-            # Checa se a busca retornou vazia
             if not bebidas:
-                print("\n Nenhum produto encontrado")
+                print(Fore.YELLOW + "\n Nenhum produto encontrado" + Fore.RESET)
             else:
-                print("\n" + "="*60)
+                print(Fore.CYAN + "\n" + "="*60 + Fore.RESET)
                 
-                # Roda a lista de produtos formatando os valores
                 for bebida in bebidas:
-                    # Desempacota os dados na mesma ordem do SELECT lá de cima
-                    nome = bebida[0]
-                    preco_venda = bebida[1]
-                    nota = bebida[2]
-                    quantidade_estoque = bebida[3]
-                    desconto = bebida[4]
+                    nome, preco_venda, nota, quantidade_estoque, desconto = bebida
                     
-                    # Aplica a lógica de desconto se o produto tiver um cadastrado
                     preco_final = float(preco_venda)
                     tag_promo = ""
                     
                     if desconto and float(desconto) > 0:
                         preco_final = float(preco_venda) - (float(preco_venda) * (float(desconto) / 100))
-                        tag_promo = f" (-{desconto}%) | PREÇO PROMO: R${preco_final:.2f}"
+                        tag_promo = f" (-{desconto}%) | PREÇO PROMO: {Fore.GREEN}R${preco_final:.2f}{Fore.RESET}"
                     
-                    # Printa o item formatado
-                    print(f"= {nome} | Base: R${float(preco_venda):.2f}{tag_promo} | Nota:{nota} | Quantidade:{quantidade_estoque}")
+                    print(f"= {nome} | Base: {Fore.GREEN}R${float(preco_venda):.2f}{Fore.RESET}{tag_promo} | Nota:{nota} | Quantidade:{quantidade_estoque}")
                 
-                print("="*60)
+                print(Fore.CYAN + "="*60 + Fore.RESET)
                 
-        except mysql.connector.Error as erro:
-            print(f"ERRO FATAL DE CONEXÃO COM O BANCO: {erro}")
-        
+        except mysql.connector.Error as e:
+            print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
+    
         finally:
             if 'conexao' in locals() and conexao.is_connected():
                 cursor.close()
                 conexao.close()
 
 
-
-
 def historico_vendas():
-    print("\n" + "="*60)
-    print("HISTÓRICO DE VENDAS".center(60))
-    print("="*60)
+    print(f"""{Fore.CYAN}{Style.BRIGHT}
+{"="*60}
+                   HISTÓRICO DE VENDAS
+{"="*60}{Fore.RESET}""")
     
     conexao = obter_conexao()
     cursor = conexao.cursor()
     
     try:
-        # 1. Busca todas as vendas organizadas da mais recente para a mais antiga
         cursor.execute("""
             SELECT id_venda, data_hora, id_cliente, valor_total, forma_pagamento
             FROM vendas
@@ -479,29 +490,22 @@ def historico_vendas():
         vendas = cursor.fetchall()
         
         if not vendas:
-            print("Nenhuma venda registrada no sistema.")
+            print(Fore.YELLOW + "Nenhuma venda registrada no sistema." + Fore.RESET)
             print("="*60)
             return
 
-        # 2. Percorre cada venda para exibir o cabeçalho e buscar os itens
         for venda in vendas:
-            id_venda = venda[0]
-            data_hora = venda[1]
-            id_cliente = venda[2]
-            valor_total = venda[3]
-            forma_pagamento = venda[4]
+            id_venda, data_hora, id_cliente, valor_total, forma_pagamento = venda
             
-            # Formata a exibição principal da venda
-            print(f"\nVENDA #{id_venda}")
+            print(Fore.CYAN + f"\nVENDA #{id_venda}")
             print("="*60)
             print(f"ID Cliente: {id_cliente}")
             print(f"Data      : {data_hora}")
             print(f"Pagamento : {forma_pagamento}")
-            print("-"*60)
+            print("-" * 60)
             print("ITENS")
-            print("-"*60)
+            print("-" * 60 + Fore.RESET)
             
-            # 3. Busca os detalhes dessa venda específica na tabela itens_venda
             cursor.execute("""
                 SELECT produtos.nome, itens_venda.quantidade, itens_venda.preco_unitario
                 FROM itens_venda
@@ -511,20 +515,18 @@ def historico_vendas():
             
             itens = cursor.fetchall()
             
-            # 4. Imprime cada produto atrelado àquela venda
             for item in itens:
-                nome_produto = item[0]
-                quantidade = item[1]
-                preco_unitario = item[2]
+                nome_produto, quantidade, preco_unitario = item
                 subtotal_item = quantidade * preco_unitario
                 
-                print(f"{quantidade:>2}X  {nome_produto:<35} R$ {subtotal_item:>16.2f}")
-                print("-"*60)
-                print(f"{'TOTAL DA VENDA':<40} R$ {valor_total:>16.2f}")            
-            print("=" * 60) # Linha separadora entre uma venda e outra
+                print(f"{quantidade:>2}X  {nome_produto:<35} {Fore.GREEN}R$ {subtotal_item:>16.2f}{Fore.RESET}")
+                print("-" * 60)
+            
+            print(f"{'TOTAL DA VENDA':<40} {Fore.GREEN}R$ {valor_total:>16.2f}{Fore.RESET}")            
+            print(Fore.CYAN + "=" * 60 + Fore.RESET)
 
     except mysql.connector.Error as e:
-        print(f"\nOcorreu um erro ao buscar o histórico: {e}")
+        print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
     finally:
         if "conexao" in locals() and conexao.is_connected():
             cursor.close()

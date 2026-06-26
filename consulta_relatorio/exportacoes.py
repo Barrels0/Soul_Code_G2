@@ -1,5 +1,6 @@
 import pandas as pd
 from forces import force_int
+from colorama import Fore, Style
 
 def perguntar_exportacao(df, nome_padrao="relatorio"):
     """
@@ -8,30 +9,31 @@ def perguntar_exportacao(df, nome_padrao="relatorio"):
     if df.empty:
         return 
 
-    print("\n" + "-"*40)
-    print(" Deseja exportar esses resultados?")
-    print(" [1] Sim, em CSV (Abre no Excel)")
-    print(" [2] Sim, em TXT (Bloco de Notas)")
-    print(" [0] Não, voltar ao menu")
-    print("-"*40)
+    print(f"""{Fore.CYAN}┌── EXPORTAR RESULTADOS ──────────────────────────┐
+│ {Fore.WHITE}[1]{Fore.CYAN} Sim, em CSV (Abre no Excel)                 │
+│ {Fore.WHITE}[2]{Fore.CYAN} Sim, em TXT (Bloco de Notas)                 │
+│ {Fore.WHITE}[0]{Fore.CYAN} Não, voltar ao menu                         │
+└─────────────────────────────────────────────────┘{Fore.RESET}""")
     
-    escolha = force_int("Sua escolha: ")
+    escolha = force_int(Fore.YELLOW + "➤ Sua escolha: " + Fore.RESET)
+    
+    escolha = force_int(Fore.YELLOW + "Sua escolha: " + Fore.RESET)
     
     try:
         if escolha == 1:
             nome_arquivo = f"{nome_padrao}.csv"
             
             df.to_csv(nome_arquivo, sep=';', index=False, encoding='utf-8-sig')
-            print(f"\n Sucesso! Arquivo '{nome_arquivo}' salvo na pasta do projeto.")
+            print(Fore.GREEN + f"\n[✔] SUCESSO: Arquivo '{nome_arquivo}' salvo na pasta do projeto!" + Fore.RESET)
             
         elif escolha == 2:
             nome_arquivo = f"{nome_padrao}.txt"
         
             df.to_csv(nome_arquivo, sep='\t', index=False, encoding='utf-8')
-            print(f"\n Sucesso! Arquivo '{nome_arquivo}' salvo na pasta do projeto.")
+            print(Fore.GREEN + f"\n[✔] SUCESSO: Arquivo '{nome_arquivo}' salvo na pasta do projeto!" + Fore.RESET)
             
         else:
-            print("\nExportação ignorada.")
+            print(Fore.YELLOW + "\n[!] Exportação ignorada pelo operador." + Fore.RESET)
             
     except Exception as e:
-        print(f"\n Erro ao tentar salvar o arquivo: {e}")
+        print(Fore.RED + f"\n[✖] ERRO ao tentar salvar o arquivo: {e}" + Fore.RESET)

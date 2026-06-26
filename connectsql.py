@@ -3,6 +3,8 @@ import mysql.connector
 from dotenv import load_dotenv
 import smtplib
 from email.message import EmailMessage
+from colorama import Fore, Style
+
 load_dotenv()
 
 def obter_conexao():
@@ -15,7 +17,7 @@ def obter_conexao():
         )
         return conexao
     except mysql.connector.Error as erro:
-        print(f"Erro ao conectar ao banco de dados: {erro}")
+        print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {erro}" + Fore.RESET)
         return None
     
     
@@ -56,7 +58,7 @@ def enviar_email_relatorio(id_operador, resposta, assunto):
         result = cursor.fetchone()
         
         if not result:
-            print("ERRO: E-mail do usuário não localizado no sistema.")
+            print(Fore.RED + Style.BRIGHT + "\n[✖] ERRO: E-mail do usuário não localizado no sistema." + Fore.RESET)
             return False
             
         destinatario = result[0]
@@ -73,19 +75,19 @@ def enviar_email_relatorio(id_operador, resposta, assunto):
     msg.set_content(resposta)
 
     try:
-        print("Processando o envio da mensagem...")
+        print(Fore.YELLOW + "\n[!] Processando o envio da mensagem, aguarde..." + Fore.RESET)
         
         with smtplib.SMTP('smtp.gmail.com', 587) as servidor:
             servidor.starttls()
             servidor.login(email_origem, senha_app)
             servidor.send_message(msg)
             
-        print(f"SUCESSO: E-mail enviado para {destinatario}.")
+        print(Fore.GREEN + f"\n[✔] SUCESSO: E-mail enviado para {destinatario}." + Fore.RESET)
         return True
 
     except smtplib.SMTPException as erro_smtp:
-        print(f"ERRO: Falha na conexão de rede/e-mail: {erro_smtp}")
+        print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha na conexão de rede/e-mail: {erro_smtp}" + Fore.RESET)
         return False
     except Exception as e:
-        print(f"ERRO: Ocorreu um erro inesperado ao enviar o e-mail: {e}")
+        print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Ocorreu um erro inesperado ao enviar o e-mail: {e}" + Fore.RESET)
         return False

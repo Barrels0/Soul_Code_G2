@@ -3,18 +3,28 @@ import mysql.connector, datetime
 from forces import force_int, force_str
 from marketing_fornecedores.marketing import teste_qualidade
 from produtos_estoque1.def1 import add_cliente
+from colorama import Fore, Style
 
 
 def exp_nota(id_operador):
-    print("\nGerando relatório de fechamento...")
+    print(Fore.CYAN + Style.BRIGHT + "\n[!] Gerando relatório de fechamento, aguarde..." + Fore.RESET)    
     conexao = obter_conexao()
     cursor = conexao.cursor()
 
     try:
         cursor.execute("""
-            SELECT id_venda, data_hora, id_cliente, valor_total, forma_pagamento
+            SELECT 
+                vendas.id_venda, 
+                vendas.data_hora, 
+                vendas.id_cliente, 
+                vendas.valor_total, 
+                vendas.forma_pagamento,
+                COALESCE(SUM(produtos.preco_custo * itens_venda.quantidade), 0) AS custo_total
             FROM vendas
-            ORDER BY id_venda ASC
+            LEFT JOIN itens_venda ON vendas.id_venda = itens_venda.id_venda
+            LEFT JOIN produtos ON itens_venda.id_produto = produtos.id_produto
+            GROUP BY vendas.id_venda, vendas.data_hora, vendas.id_cliente, vendas.valor_total, vendas.forma_pagamento
+            ORDER BY vendas.id_venda ASC
         """)
         vendas = cursor.fetchall()
 
@@ -22,25 +32,36 @@ def exp_nota(id_operador):
             print("Nenhuma venda registrada hoje.")
             return None
 
-        cursor.execute("SELECT SUM(valor_total) FROM vendas")
-        faturamento_total = cursor.fetchone()[0]
         conteudo_relatorio = "=================================\n"
         conteudo_relatorio += "        RELATÓRIO DE VENDAS      \n"
         conteudo_relatorio += "=================================\n\n"
+
+        faturamento_total = 0.0
+        custo_total_dia = 0.0
+        lucro_total_dia = 0.0
 
         for venda in vendas:
             id_venda = venda[0]
             data_hora = venda[1]
             id_cliente = venda[2]
-            valor_total = venda[3]
+            valor_total = float(venda[3])
             pagamento = venda[4]
+            custo_da_venda = float(venda[5])
 
-            linha = f"Venda ID: {id_venda} | Data: {data_hora} | Cliente ID: {id_cliente} | Valor: R${valor_total:.2f} | Pagamento: {pagamento}\n"
+            lucro_venda = valor_total - custo_da_venda
 
-            conteudo_relatorio += linha
+            faturamento_total += valor_total
+            custo_total_dia += custo_da_venda
+            lucro_total_dia += lucro_venda
+
+            linha = f"Venda ID: {id_venda} | Data: {data_hora} | Cliente ID: {id_cliente} | Faturado: R${valor_total:.2f} | Custo: R${custo_da_venda:.2f} | Lucro: R${lucro_venda:.2f} | Pagamento: {pagamento}\n"
+            
+            conteudo_relatorio += linha 
 
         conteudo_relatorio += "\n=================================\n"
-        conteudo_relatorio += f"FATURAMENTO TOTAL: R${faturamento_total:.2f}\n"
+        conteudo_relatorio += f"FATURAMENTO BRUTO: R${faturamento_total:.2f}\n"
+        conteudo_relatorio += f"CUSTO DOS PRODUTOS: R${custo_total_dia:.2f}\n"
+        conteudo_relatorio += f"LUCRO LÍQUIDO: R${lucro_total_dia:.2f}\n"
         conteudo_relatorio += "=================================\n"
 
         nome_arquivo = f"fechamento_caixa_{datetime.datetime.now().strftime('%y_%m_%d_%Hh%Mm%Ss')}.txt"
@@ -48,33 +69,37 @@ def exp_nota(id_operador):
         with open(nome_arquivo, "w", encoding="utf-8") as arquivo:
             arquivo.write(conteudo_relatorio)
 
-        print(f"SUCESSO! Arquivo '{nome_arquivo}' foi criado na sua pasta!")
-        email = force_str("Você deseja enviar isso para o seu email? (Sim/Não)").upper()
+        print(Fore.GREEN + f"\n[✔] SUCESSO! Arquivo '{nome_arquivo}' foi criado na sua pasta!")
+        
+        email = force_str(Fore.YELLOW + "➤ Você deseja enviar este relatório para o seu e-mail? (Sim/Não): " + Fore.RESET).upper()    
         if email in ["S", "SIM"]:
-            assunto = "NOTA FISCAL"
+            assunto = "FECHAMENTO DE CAIXA E LUCRO"
             resposta = conteudo_relatorio
             enviar_email = enviar_email_relatorio(id_operador, resposta, assunto)
+            
             if not enviar_email:
-                print("Erro: email não enviado. Voltando para o menu!")
+                print(Fore.RED + "\n[✖] ERRO: E-mail não enviado. Voltando para o menu!" + Fore.RESET)
                 return
             else:
-                print("Email enviado com sucesso!")
+                print(Fore.GREEN + "\n[✔] E-mail enviado com sucesso!" + Fore.RESET)
                 return
         else:
-            print("Voltando para o menu!")
+            print(Fore.YELLOW + "\n[!] Operação ignorada. Voltando para o menu..." + Fore.RESET)
 
-    except mysql.connector.Error as e:
-        print(f"Ocorreu um erro no banco de dados: {e}")
+    except mysql.connector.Error as erro:
+        print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {erro}" + Fore.RESET)
         return None
     finally:
         fechar_execusao(
-            conexao if "conexao" in locals() else None,
-            cursor if "cursor" in locals() else None,
+            conexao if "conexao" in locals() else None, 
+            cursor if "cursor" in locals() else None
         )
 
 
 def nota_fiscal():
-    print("\n----- NOTA FISCAL -----")
+    print(Fore.CYAN + Style.BRIGHT + "\n╔═════════════════════════════════════════════════╗")
+    print(Fore.CYAN + Style.BRIGHT + "║                   NOTA FISCAL                   ║")
+    print(Fore.CYAN + Style.BRIGHT + "╚═════════════════════════════════════════════════╝" + Fore.RESET)
     conexao = obter_conexao()
     cursor = conexao.cursor()
 
@@ -91,15 +116,15 @@ def nota_fiscal():
 
         for venda in vendas:
             print(
-                f"{venda[0]} | Cliente:{venda[1]} | Usuario:{venda[2]} | Cupom:{venda[3]} | Valor: R${venda[4]:.2f} | Pagamento:{venda[5]} | Quantidade:{venda[6]} | Preço Unitário:{venda[7]} |"
+                Fore.WHITE + f"{venda[0]} | Cliente:{venda[1]} | Usuario:{venda[2]} | Cupom:{venda[3]} | Valor: " + Fore.GREEN + f"R${venda[4]:.2f}" + Fore.WHITE + f" | Pagamento:{venda[5]} | Quantidade:{venda[6]} | Preço Unitário:{venda[7]} |"
             )
             total += venda[4]
 
-        print("-" * 30)
-        print(f"TOTAL EXIBIDO: R$ {total:.2f}")
+        print(Fore.CYAN + "-" * 30)
+        print(Fore.GREEN + Style.BRIGHT + f"TOTAL EXIBIDO: R$ {total:.2f}")
 
-    except mysql.connector.Error as e:
-        print(f"Ocorreu um erro: {e}")
+    except mysql.connector.Error as erro:
+        print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {erro}" + Fore.RESET)
     finally:
         fechar_execusao(
             conexao if "conexao" in locals() else None,
@@ -108,22 +133,22 @@ def nota_fiscal():
 
 
 def registar_venda(id_operador):
-    print("\n====== CARRINHO DE COMPRAS ======")
+    print(Fore.CYAN + Style.BRIGHT + "\n====== CARRINHO DE COMPRAS ======")
     carrinho = []
 
     while True:
         try:
             id_produto = force_int(
-                "Digite o [ID] do produto (-1 concluir | -2 cancelar): "
+                Fore.YELLOW + "Digite o [ID] do produto (-1 concluir | -2 cancelar): " + Fore.RESET
             )
         except ValueError:
-            print("ERRO: O ID DEVE SER UM NÚMERO INTEIRO.")
+            print(Fore.RED + "ERRO: O ID DEVE SER UM NÚMERO INTEIRO.")
             continue
 
         if id_produto == -1:
             break
         elif id_produto == -2:
-            print("Compra cancelada pelo operador!")
+            print(Fore.YELLOW + "Compra cancelada pelo operador!")
             carrinho.clear()
             return
 
@@ -140,11 +165,11 @@ def registar_venda(id_operador):
             bebida = cursor.fetchone()
 
             if not bebida:
-                print("ERRO: ID INVÁLIDO. Esse produto não existe no sistema.")
+                print(Fore.RED + "ERRO: ID INVÁLIDO. Esse produto não existe no sistema.")
                 continue
 
             if bebida[8] == 0:
-                print("Produto está atualmente desativado, tente outra opção!")
+                print(Fore.RED + "Produto está atualmente desativado, tente outra opção!")
                 continue
 
             nome_bebida = bebida[0]
@@ -160,25 +185,25 @@ def registar_venda(id_operador):
 
             venda_autorizada = teste_qualidade(id_produto)
             if not venda_autorizada:
-                print("-> Produto rejeitado. Escolha outro item.")
+                print(Fore.RED + "-> Produto rejeitado. Escolha outro item.")
                 continue
 
             try:
-                quantidade = force_int(f"Quantas unidades de '{nome_bebida}' você deseja? ")
+                quantidade = force_int(Fore.YELLOW + f"Quantas unidades de '{nome_bebida}' você deseja? " + Fore.RESET)
             except ValueError:
-                print("ERRO: Quantidade inválida.")
+                print(Fore.RED + "ERRO: Quantidade inválida.")
                 continue
             min_atacado = int(bebida[10]) if bebida[10] else 999999
             desconto_atacado = float(bebida[11]) if bebida[11] else 0.0
 
             if quantidade >= min_atacado:
-                print("Você pegou quantidade o suficientes para o produto ir a preço de atacado!")
+                print(Fore.GREEN + "Você pegou quantidade o suficientes para o produto ir a preço de atacado!")
                 desconto = (preco_venda * (desconto_atacado/100))
                 preco_promocional = preco_promocional - desconto 
-                print(f"O desconto de atacado foi aplicado com sucesso, o novo valor é: R${preco_promocional:.2f}")
+                print(Fore.GREEN + f"O desconto de atacado foi aplicado com sucesso, o novo valor é: R${preco_promocional:.2f}")
 
         except mysql.connector.Error as e:
-            print(f"Ocorreu um erro: {e}")
+            print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
 
         finally:
             fechar_execusao(
@@ -192,11 +217,11 @@ def registar_venda(id_operador):
         estoque_disponivel = quantidade_estoque - qtd_carrinho
 
         if quantidade <= 0:
-            print("ERRO: Quantidade inválida.")
+            print(Fore.RED + "ERRO: Quantidade inválida.")
             continue
         elif quantidade > estoque_disponivel:
             print(
-                f"Estoque insuficiente. Você já tem {qtd_carrinho} no carrinho, estoque disponível é {quantidade_estoque}."
+                Fore.RED + f"Estoque insuficiente. Você já tem {qtd_carrinho} no carrinho, estoque disponível é {quantidade_estoque}."
             )
             continue
         else:
@@ -209,7 +234,7 @@ def registar_venda(id_operador):
                     "subtotal_promocional": quantidade * preco_promocional,
                 }
             )
-            print(f"-> {quantidade}x '{nome_bebida}' adicionado ao carrinho!")
+            print(Fore.GREEN + f"-> {quantidade}x '{nome_bebida}' adicionado ao carrinho!")
 
     if not carrinho:
         return
@@ -224,23 +249,23 @@ def registar_venda(id_operador):
 
         if not clientes:
             add_cl = force_str(
-                "Não temos clientes cadastrados. Cadastrar agora? (S/N): "
+                Fore.YELLOW + "Não temos clientes cadastrados. Cadastrar agora? (S/N): " + Fore.RESET
             ).upper()
             if add_cl in ["S", "SIM"]:
                 id_cliente_final = add_cliente()
             else:
-                print("Compra não pode continuar sem cliente!")
+                print(Fore.RED + "Compra não pode continuar sem cliente!")
                 return
         else:
-            print("\nEsses são os nossos clientes:")
+            print(Fore.CYAN + Style.BRIGHT + "\nEsses são os nossos clientes:")
             for linha in clientes:
-                print(f"-> ID: {linha[0]} | Nome: {linha[1]} | Doc: {linha[2]}")
+                print(Fore.WHITE + f"-> ID: {linha[0]} | Nome: {linha[1]} | Doc: {linha[2]}")
 
             cliente_v = force_int(
-                "\nO cliente dessa venda é algum desses? (1-Sim | 2-Não): "
+                Fore.YELLOW + "\n➤ O cliente dessa venda é algum destes? [1] Sim | [2] Não: " + Fore.RESET
             )
             if cliente_v == 1:
-                escolha = force_int("Digite o [ID] do cliente: ")
+                escolha = force_int(Fore.YELLOW + "Digite o [ID] do cliente: " + Fore.RESET)
                 cursor.execute(
                     "SELECT id_cliente FROM clientes WHERE id_cliente = %s AND ativo = 1", (escolha,)
                 )
@@ -248,16 +273,16 @@ def registar_venda(id_operador):
                 if result:
                     id_cliente_final = result[0]
                 else:
-                    print("ID de cliente inválido!")
+                    print(Fore.RED + "ID de cliente inválido!")
                     return
             elif cliente_v == 2:
                 add_cl = force_str(
-                    "Você vai precisar adicionara o seu cliente!. Cadastrar agora? (S/N): "
+                    Fore.YELLOW + "Você vai precisar adicionara o seu cliente!. Cadastrar agora? (S/N): " + Fore.RESET
                 ).upper()
                 if add_cl in ["S", "SIM"]:
                     id_cliente_final = add_cliente()
                 else:
-                    print("Compra não pode continuar sem cliente!")
+                    print(Fore.RED + "Compra não pode continuar sem cliente!")
                     return
 
     finally:
@@ -267,15 +292,20 @@ def registar_venda(id_operador):
         )
     total_compra = sum(item["subtotal_promocional"] for item in carrinho)
 
-    print(f"\n============= FECHAMENTO DE CAIXA ==============")
-    print(f"Total a pagar: R$ {total_compra:.2f}")
-    confirmar = force_str("Confirmar pagamento e registrar venda? (S/N): ").upper()
+    print(Fore.CYAN + Style.BRIGHT + f"\n============= FECHAMENTO DE CAIXA ==============")
+    print(Fore.WHITE + f"Total a pagar: " + Fore.GREEN + f"R$ {total_compra:.2f}")
+    confirmar = force_str(Fore.YELLOW + "Confirmar pagamento e registrar venda? (S/N): " + Fore.RESET).upper()
     if confirmar not in ["S", "SIM"]:
-        print("Venda cancelada pelo operador.")
+        print(Fore.YELLOW + "Venda cancelada pelo operador.")
         return
 
-    print("\n1-PIX | 2-Boleto | 3-Transferência | 4-Cartão de Crédito")
-    pagamento_opcao = force_str("Qual o método de pagamento? ")
+    print(f"""{Fore.CYAN}┌── SELECIONE O MÉTODO DE PAGAMENTO ──────────────┐
+│ {Fore.WHITE}[1]{Fore.CYAN} PIX                                         │
+│ {Fore.WHITE}[2]{Fore.CYAN} Boleto                                      │
+│ {Fore.WHITE}[3]{Fore.CYAN} Transferência                               │
+│ {Fore.WHITE}[4]{Fore.CYAN} Cartão de Crédito                           │
+└─────────────────────────────────────────────────┘{Fore.RESET}""")
+    pagamento_opcao = force_str(Fore.YELLOW + "➤ Escolha o método: " + Fore.RESET)
     mapa_pagamentos = {
         "1": "PIX",
         "2": "Boleto",
@@ -285,18 +315,18 @@ def registar_venda(id_operador):
     forma_pagamento = mapa_pagamentos.get(pagamento_opcao)
 
     if not forma_pagamento:
-        print("ERRO: Método de pagamento inválido.")
+        print(Fore.RED + "ERRO: Método de pagamento inválido.")
         return
 
     id_cupom_bd = None
-    cupom = force_str("Você possui algum cupom de desconto? (S/N): ").upper()
+    cupom = force_str(Fore.YELLOW + "Você possui algum cupom de desconto? (S/N): " + Fore.RESET).upper()
 
     conexao = obter_conexao()
     cursor = conexao.cursor()
 
     try:
         if cupom in ["S", "SIM"]:
-            nm_cup = force_str("Digite o nome do seu cupom: ").upper()
+            nm_cup = force_str(Fore.YELLOW + "Digite o nome do seu cupom: " + Fore.RESET).upper()
             cursor.execute(
                 "SELECT id_cupom, desconto, quantidade FROM cupons WHERE nome = %s AND ativo = 1",
                 (nm_cup,),
@@ -304,12 +334,12 @@ def registar_venda(id_operador):
             result = cursor.fetchone()
 
             if not result or result[2] == 0:
-                print("Cupom inválido ou esgotado!")
+                print(Fore.RED + "\n[✖] ERRO: Cupom inválido ou esgotado!" + Fore.RESET)
             else:
                 id_cupom_bd = result[0]
 
                 total_compra *= 1 - (float(result[1]) / 100)
-                print(f"Cupom aplicado com sucesso! Novo total: R$ {total_compra:.2f}")
+                print(Fore.GREEN + f"\n[✔] Cupom aplicado com sucesso! Novo total: R$ {total_compra:.2f}" + Fore.RESET)
                 conexao.start_transaction()
                 cursor.execute(
                     "UPDATE cupons SET quantidade = quantidade - 1, qtd_used = qtd_used + 1 WHERE id_cupom = %s",
@@ -361,13 +391,13 @@ def registar_venda(id_operador):
 
         conexao.commit()
         print(
-            "\nVenda registrada, nota fiscal gerada e estoque atualizado com sucesso!"
+            Fore.GREEN + Style.BRIGHT + "\nVenda registrada, nota fiscal gerada e estoque atualizado com sucesso!"
         )
 
     except mysql.connector.Error as erro:
         conexao.rollback()
-        print("\nERRO FATAL NO BANCO DE DADOS: Transação cancelada.")
-        print(f"Motivo técnico: {erro}")
+        print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {erro}" + Fore.RESET)
+        print(Fore.RED + f"Motivo técnico: {erro}")
     finally:
         fechar_execusao(
             conexao if "conexao" in locals() else None,

@@ -1,116 +1,143 @@
 from forces import force_int, force_float, force_str, bsc_id
-from connectsql import obter_conexao,fechar_execusao
+from connectsql import obter_conexao, fechar_execusao
 from marketing_fornecedores.marketing import cadastrar_fornecedor
 import mysql.connector
-
+from colorama import Fore, Style
 def adicionar_item() -> None:
-    print("\n" + "="*40)
+    print(Fore.CYAN + Style.BRIGHT + "\n" + "="*40)
     print("        CADASTRAR NOVO PRODUTO        ")
-    print("="*40)
+    print("="*40 + Fore.RESET)
 
-    # 1. Coleta os dados básicos do produto
-    nome_produto = force_str("Digite o nome do produto: ").title()
-    preco_custo = force_float("Digite o preço de CUSTO: R$ ")
-    preco_venda = force_float("Digite o preço de VENDA: R$ ")
-    quantidade = force_int("Quantidade inicial em estoque: ")
-    nota = force_float("Nota do produto (ex: 4.5) ou 0 para não avaliado: ")
-    if nota > 5 or nota < 0:
-        print("Valor inválido!")
-        return
-    
-    tem_validade = force_str("O produto tem data de validade? (S/N): ").upper()
-    validade = force_str("Digite a validade (AAAA-MM-DD): ") if tem_validade == "S" else None
-    if len (validade) != 10:
-            print("Quantidade de caracteres inválida!")
-            return
-    conexao = obter_conexao()
-    cursor = conexao.cursor()
-
-    try:
-        print("\n--- SELECIONE A CATEGORIA ---")
-        cursor.execute("SELECT id_categoria, nome FROM categorias WHERE ativo = 1")
-        categorias = cursor.fetchall()
+    while True:
+        nome_produto = force_str("Digite o nome do produto ou [0] para sair: ").title()
+        if nome_produto == '0':
+            print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
+            break
+        try:
+            preco_custo = force_float("Digite o preço de CUSTO ou [0] para sair: R$ ")
+            if preco_custo == 0:
+                print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
+                break
+            preco_venda = force_float("Digite o preço de VENDA ou [0] para sair: R$ ")
+            if preco_venda == 0:
+                print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
+                break
+            quantidade = force_int("Quantidade inicial em estoque ou [0] para sair: ")
+            if quantidade == 0:
+                print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
+                break
+            nota = force_float("Nota do produto (ex: 4.5) ou 0 para não avaliado: ")
+        except ValueError:
+            print(Fore.RED + "\n[✖] ERRO: Digite apenas números." + Fore.RESET)
+            continue
+        if nota > 5 or nota < 0:
+            print(Fore.RED + "\n[✖] ERRO: Valor de nota inválido (deve ser entre 0 e 5)." + Fore.RESET)
+            continue
         
-        if categorias:
-            for i in categorias:
-                print(f"[{i[0]}] - {i[1]}")
-            id_categoria = force_int("Digite o ID da categoria correspondente: ")
-        else:
-            print("Nenhuma categoria cadastrada. Usando ID 1 por padrão.")
-            id_categoria = 1
+        tem_validade = force_str("O produto tem data de validade?, Caso queira retornar digite [0] (S/N): ").upper()
+        if tem_validade == "0":
+            print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
+            break
+        validade = force_str("Digite a validade ou [0] para sair 0(AAAA-MM-DD): ") if tem_validade == "S" else None
+        if validade == 0:
+            print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
+            break
+        if validade and len(validade) != 10:
+            print(Fore.RED + "\n[✖] ERRO: Quantidade de caracteres da validade inválida!" + Fore.RESET)
+            return
+        conexao = obter_conexao()
+        cursor = conexao.cursor()
 
-        print("\n--- SELECIONE O FORNECEDOR ---")
-        cursor.execute("SELECT id_fornecedor, nome FROM fornecedores WHERE ativo = 1")
-        fornecedores = cursor.fetchall()
-
-        id_fornecedor_escolhido = None
-
-        if fornecedores:
-            for forn in fornecedores:
-                print(f"[{forn[0]}] - {forn[1]}")
+        try:
+            print(Fore.CYAN + "\n--- SELECIONE A CATEGORIA ---" + Fore.RESET)
+            cursor.execute("SELECT id_categoria, nome FROM categorias WHERE ativo = 1")
+            categorias = cursor.fetchall()
             
-            fornece = force_int("\nO fornecedor está na lista acima? (1-Sim | 2-Não): ")
-            
-            if fornece == 1:
-                id_fornecedor_escolhido = force_int("Digite o [ID] do fornecedor: ")
-            elif fornece == 2:
-                id_fornecedor_escolhido = cadastrar_fornecedor() 
+            if categorias:
+                for i in categorias:
+                    print(f"[{i[0]}] - {i[1]}")
+                id_categoria = force_int("Digite o ID da categoria correspondente ou [0]: ")
+                if id_categoria == 0:
+                    print("Voltando ao menu")
+                    break
             else:
-                print("Opção inválida. Operação cancelada.")
-                return
-        else:
-            print("Nenhum fornecedor cadastrado ainda!")
-            opcao = force_int("Deseja cadastrar um novo fornecedor agora? (1-Sim | 2-Não): ")
-            if opcao == 1:
-                id_fornecedor_escolhido = cadastrar_fornecedor()
-            else:
-                print("Operação cancelada. É obrigatório ter um fornecedor.")
-                return
+                print(Fore.YELLOW + "Nenhuma categoria cadastrada. Usando ID 1 por padrão.")
+                id_categoria = 1
 
-        cursor.execute(
-            """
-            INSERT INTO produtos (nome, id_categoria, id_fornecedor, preco_venda, preco_custo, quantidade_estoque, nota, validade, ativo)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 1)
-            """,
-            (
-                nome_produto,
-                id_categoria,
-                id_fornecedor_escolhido, # Agora enviamos o ID numérico, não o texto
-                preco_venda,
-                preco_custo,
-                quantidade,
-                nota,
-                validade
+            print(Fore.CYAN + "\n--- SELECIONE O FORNECEDOR ---" + Fore.RESET)
+            cursor.execute("SELECT id_fornecedor, nome FROM fornecedores WHERE ativo = 1")
+            fornecedores = cursor.fetchall()
+
+            id_fornecedor_escolhido = None
+
+            if fornecedores:
+                for forn in fornecedores:
+                    print(f"[{forn[0]}] - {forn[1]}")
+                
+                fornece = force_int("\nO fornecedor está na lista acima? (1-Sim | 2-Não): ")
+                
+                if fornece == 1:
+                    id_fornecedor_escolhido = force_int("Digite o [ID] do fornecedor ou [0] para sair: ")
+                    if id_fornecedor_escolhido == 0:
+                        print("Voltando ao menu")
+                        break
+                elif fornece == 2:
+                    id_fornecedor_escolhido = cadastrar_fornecedor() 
+                else:
+                    print(Fore.RED + "Opção inválida. Operação cancelada.")
+                    return
+            else:
+                print(Fore.YELLOW + "Nenhum fornecedor cadastrado ainda!")
+                opcao = force_int("Deseja cadastrar um novo fornecedor agora? (1-Sim | 2-Não): ")
+                if opcao == 1:
+                    id_fornecedor_escolhido = cadastrar_fornecedor()
+                else:
+                    print(Fore.RED + "Operação cancelada. É obrigatório ter um fornecedor.")
+                    return
+
+            cursor.execute(
+                """
+                INSERT INTO produtos (nome, id_categoria, id_fornecedor, preco_venda, preco_custo, quantidade_estoque, nota, validade, ativo)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 1)
+                """,
+                (
+                    nome_produto,
+                    id_categoria,
+                    id_fornecedor_escolhido,
+                    preco_venda,
+                    preco_custo,
+                    quantidade,
+                    nota,
+                    validade
+                )
             )
-        )
-        conexao.commit()
-        print(f"\nProduto '{nome_produto}' cadastrado com sucesso no sistema!")
+            conexao.commit()
+            print(Fore.GREEN + f"\nProduto '{nome_produto}' cadastrado com sucesso no sistema!" + Fore.RESET)
 
-    except mysql.connector.Error as e:
-        conexao.rollback()
-        print(f"\nOcorreu um erro no banco de dados: {e}")
-    finally:
-        fechar_execusao(
-            conexao if "conexao" in locals() else None, 
-            cursor if "cursor" in locals() else None
+        except mysql.connector.Error as e:
+            conexao.rollback()
+            print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
+        finally:
+            fechar_execusao(
+                conexao if "conexao" in locals() else None, 
+                cursor if "cursor" in locals() else None
             )
 
 def alterar_preco():
-    print("\n" + "="*40)
+    print(Fore.CYAN + Style.BRIGHT + "\n" + "="*40)
     print("            ALTERAR PREÇO            ")
-    print("="*40)
+    print("="*40 + Fore.RESET)
     
     try:
         id_produto = bsc_id()
     except ValueError:
-        print("ERRO: Digite um ID válido!")
+        print(Fore.RED + "\n[✖] ERRO: Digite um ID válido!" + Fore.RESET)
         return
 
     conexao = obter_conexao()
     cursor = conexao.cursor()
 
     try:
-        # Busca o nome e o preço de venda atual na tabela produtos
         cursor.execute(
             "SELECT nome, preco_venda FROM produtos WHERE id_produto = %s AND ativo = 1", 
             (id_produto,)
@@ -118,7 +145,7 @@ def alterar_preco():
         bebida = cursor.fetchone()
 
         if not bebida:
-            print("ERRO: Produto não encontrado no banco de dados!")
+            print(Fore.RED + "\n[✖] ERRO: Produto não encontrado no banco de dados!" + Fore.RESET)
             return
         
         novo_preco = force_float(
@@ -134,35 +161,34 @@ def alterar_preco():
             (novo_preco, id_produto),
         )
         conexao.commit()
-        print(f"\nAlteração feita com sucesso! '{bebida[0]}' agora custa R$ {novo_preco:.2f}.")
+        print(Fore.GREEN + f"\nAlteração feita com sucesso! '{bebida[0]}' agora custa R$ {novo_preco:.2f}." + Fore.RESET)
 
     except mysql.connector.Error as e:
         conexao.rollback()
-        print("\nERRO FATAL NO BANCO DE DADOS: Transação cancelada.")
-        print(f"Motivo técnico: {e}")
+        print(Fore.RED + Style.BRIGHT + "\nERRO FATAL NO BANCO DE DADOS: Transação cancelada.")
+        print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
         
     finally:
         fechar_execusao(
             conexao if "conexao" in locals() else None, 
             cursor if "cursor" in locals() else None
-            )
+        )
 
 def repor_estoque():
-    print("\n" + "="*40)
+    print(Fore.CYAN + Style.BRIGHT + "\n" + "="*40)
     print("            REPOR ESTOQUE            ")
-    print("="*40)
+    print("="*40 + Fore.RESET)
     
     try:
         id_produto = bsc_id()
     except ValueError:
-        print("ERRO: Digite um ID válido!")
+        print(Fore.RED + "ERRO: Digite um ID válido!")
         return
 
     conexao = obter_conexao()
     cursor = conexao.cursor()
 
     try:
-        # Busca o nome e o estoque atual na tabela produtos
         cursor.execute(
             "SELECT nome, quantidade_estoque FROM produtos WHERE id_produto = %s AND ativo = 1",
             (id_produto,),
@@ -170,7 +196,7 @@ def repor_estoque():
         bebida = cursor.fetchone()
 
         if not bebida:
-            print("ERRO: Produto não encontrado no banco de dados!")
+            print(Fore.RED + "\n[✖] ERRO: Produto não encontrado no banco de dados!" + Fore.RESET)
             return
 
         quantidade_adicional = force_int(
@@ -188,42 +214,43 @@ def repor_estoque():
             (nova_quantidade, id_produto),
         )
         conexao.commit()
-        print(f"\nReposição feita com sucesso! '{bebida[0]}' agora tem {nova_quantidade} unidades em estoque.")
+        print(Fore.GREEN + f"\nReposição feita com sucesso! '{bebida[0]}' agora tem {nova_quantidade} unidades em estoque." + Fore.RESET)
 
     except mysql.connector.Error as e:
         conexao.rollback() 
-        print(f"\nErro no banco de dados: {e}")
+        print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
         
     finally:
         fechar_execusao(
             conexao if "conexao" in locals() else None, 
             cursor if "cursor" in locals() else None
-            )
+        )
 
 def alterar_nome():
 
     while True:
-        print("ALTERAR NOME")
+        print(Fore.CYAN + "ALTERAR NOME" + Fore.RESET)
 
         try:
-            id_produto = force_int("Digite o ID da bebida que deseja alterar o nome: ")
-            
+            id_produto = force_int("Digite o ID da bebida que deseja alterar o nome ou [0] para sair: ")
 
-            if id_produto <= 0:
-                print("O ID deve ser maior que zero.")
+            if id_produto == 0:
+                print(Fore.YELLOW + "\n[!] Voltando ao menu principal..." + Fore.RESET)
+                break
+            
+            if id_produto < 0:
+                print(Fore.RED + "\n[✖] ERRO: O ID deve ser maior que zero." + Fore.RESET)
                 continue
 
         except ValueError:
-            print("O ID precisa ser um número válido.")
-
+            print(Fore.RED + "O ID precisa ser um número válido.")
             escolha = force_str("Deseja tentar novamente? Digite SIM ou NÃO: ").lower()
-
             if escolha in ("sim", "s"):
                 continue
             elif escolha in ("nao", "não", "n"):
                 break
             else:
-                print("Informação inválida.")
+                print(Fore.RED + "Informação inválida.")
                 break
 
         try:
@@ -235,18 +262,16 @@ def alterar_nome():
             produto = cursor.fetchone()
 
             if not produto:
-                print("Produto não encontrado!")
+                print(Fore.RED + "Produto não encontrado!")
                 continue
 
-            print(f"Produto encontrado: {produto[0]}")
-            print(
-                "(Se não quiser seguir com a alteração, deixe em branco e aperte Enter)"
-            )
+            print(Fore.WHITE + f"Produto encontrado: {produto[0]}")
+            print("(Se não quiser seguir com a alteração, deixe em branco e aperte Enter)")
 
             novo_nome = force_str(f"Alterar nome da bebida [{produto[0]}] para: ")
 
             if not novo_nome:
-                print("Alteração cancelada.")
+                print(Fore.YELLOW + "Alteração cancelada.")
                 continue
             conexao.start_transaction()
             cursor.execute(
@@ -259,13 +284,13 @@ def alterar_nome():
             )
 
             conexao.commit()
-            print("Nome do produto alterado com sucesso!!")
+            print(Fore.GREEN + "Nome do produto alterado com sucesso!!" + Fore.RESET)
 
             break
 
-        except mysql.connector.Error as erro:
+        except mysql.connector.Error as e:
             conexao.rollback()
-            print(f"Erro no banco de dados: {erro}")
+            print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
 
         finally:
             fechar_execusao(
@@ -274,18 +299,18 @@ def alterar_nome():
             )
 
 def off_prod():
-    print("\n Ocultar item do catálogo(Soft Delete)")
+    print(Fore.YELLOW + "\n Ocultar item do catálogo(Soft Delete)" + Fore.RESET)
     conexao = obter_conexao()
     cursor = conexao.cursor()
     while True:
         try:
             id_prod = force_int("Digite o [ID] do produto desejado ou [0] para sair: ")
         except ValueError:
-            print("Digite somente números")
+            print(Fore.RED + "Digite somente números")
             continue
 
-
         if id_prod == 0:
+            print(Fore.YELLOW + "\n[!] Voltando ao menu principal..." + Fore.RESET)
             break
         try:
             cursor.execute("SELECT nome FROM produtos WHERE id_produto = %s AND ativo = 1",(id_prod,))
@@ -293,45 +318,44 @@ def off_prod():
             found = cursor.fetchone()
 
             if not found:
-                print("Bebida não encontrada ou já foi desativada")
+                print(Fore.RED + "Bebida não encontrada ou já foi desativada")
                 continue    
 
             confirm = force_str(f"Tem certeza que deseja desativar {found[0]}? Para confirmar digite [s] e para cancelar [n]: ").lower()
 
-            if confirm == "s" or "sim":
+            if confirm in ["s", "sim"]:
                 conexao.start_transaction()
                 cursor.execute("UPDATE produtos SET ativo = 0 WHERE id_produto = %s ",(id_prod,))
                 conexao.commit()
-                print("Bebida desativada do catálogo")
+                print(Fore.GREEN + "Bebida desativada do catálogo" + Fore.RESET)
 
             else:
-                print("Cancelando operação, retornando ao menu")
+                print(Fore.YELLOW + "\n[!] Operação cancelada, retornando ao menu..." + Fore.RESET)
                 continue
 
         except mysql.connector.Error as e:
-            print(f"Erro no banco de dados: {e}")
+            print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
             conexao.rollback()
             break
         finally:
             fechar_execusao(
             conexao if "conexao" in locals() else None, 
             cursor if "cursor" in locals() else None
-            )         
+            )        
 
-        
 def atv_prod():
-    print("\n Ativar bebida no catálogo")
+    print(Fore.CYAN + "\n Ativar bebida no catálogo" + Fore.RESET)
     conexao = obter_conexao()
     cursor = conexao.cursor()
     while True:
         try:
             id_prod = force_int("Digite o [ID] do produto desejado ou [0] para sair: ")
         except ValueError:
-            print("Digite somente números")
+            print(Fore.RED + "Digite somente números")
             continue
 
-
         if id_prod == 0:
+            print(Fore.YELLOW + "\n[!] Voltando ao menu principal..." + Fore.RESET)
             break
         try:
             cursor.execute("SELECT nome FROM produtos WHERE id_produto = %s AND ativo = 0",(id_prod,))
@@ -339,45 +363,56 @@ def atv_prod():
             found = cursor.fetchone()
 
             if not found:
-                print("Bebida não encontrada ou já está ativada")
+                print(Fore.RED + "Bebida não encontrada ou já está ativada")
                 continue    
 
-            confirm = force_str(f"Tem certeza que deseja ativar{found[0]}? Para confirmar digite [s] e para cancelar [n]: ").lower()
+            confirm = force_str(f"Tem certeza que deseja ativar {found[0]}? Para confirmar digite [s] e para cancelar [n]: ").lower()
 
             if confirm in ("sim", "s"):
                 conexao.start_transaction()
                 cursor.execute("UPDATE produtos SET ativo = 1 WHERE id_produto = %s ",(id_prod,))
                 conexao.commit()
-                print("Bebida ativada no catálogo")
+                print(Fore.GREEN + "Bebida ativada no catálogo" + Fore.RESET)
 
             else:
-                print("Cancelando operação, retornando ao menu")
+                print(Fore.YELLOW + "\n[!] Operação cancelada, retornando ao menu..." + Fore.RESET)
                 continue
 
-        except mysql.connector.Error as erro:
-            print(f"Erro no banco de dados: {erro}")
+        except mysql.connector.Error as e:
+            print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
             conexao.rollback()
             break
         finally:
             fechar_execusao(
             conexao if "conexao" in locals() else None, 
             cursor if "cursor" in locals() else None
-            )         
-
+            )        
 
 def add_cliente():
     while True:
-        print("\n----- NOVO CLIENTE --------")
-        nome_cliente = force_str("Digite o nome do novo cliente: ").lower()
-        cnpj = force_str("Digite o cnpj do cliente (Digite apenas os numeros): ")
-        if len (cnpj) != 14 or not cnpj.isdigit():#função que garante que o usuario so vai colocar numeros pois se colocar alguma letra ou algo do tipo pois ele retorna como false!!!
-            print("Quantidade de caracteres inválida!")
+        print(Fore.CYAN + Style.BRIGHT + "\n----- NOVO CLIENTE --------" + Fore.RESET)
+        nome_cliente = force_str("Digite o nome do novo cliente ou [0] para sair: ").lower()
+        if nome_cliente == '0':
+            print("Voltando ao menu")
+            break
+        cnpj = force_str("Digite o cnpj do cliente ou [0] para sair (Digite apenas os numeros): ")
+        if cnpj == '0':
+            print("Voltando ao menu")
+            break
+        if len(cnpj) != 14 or not cnpj.isdigit():
+            print(Fore.RED + "\n[✖] ERRO: Quantidade de caracteres do CNPJ inválida!" + Fore.RESET)
             continue
         cnpj_formatado = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
-        endereco = force_str("Digite o endereço do cliente: ").lower()
-        telefone = force_str("Digite o telefone do cliente (Digite apenas os numeros): ")
-        if len (telefone) != 11 or not telefone.isdigit():
-            print("Quantidade de caracteres inválida!")
+        endereco = force_str("Digite o endereço do cliente ou [0] para sair: ").lower()
+        if endereco == '0':
+            print("Voltando ao menu")
+            break
+        telefone = force_str("Digite o telefone do cliente ou [0] para sair(Digite apenas os numeros): ")
+        if telefone == 0:
+            print("Voltando ao menu")
+            break
+        if len(telefone) != 11 or not telefone.isdigit():
+            print(Fore.RED + "\n[✖] ERRO: Quantidade de caracteres do telefone inválida!" + Fore.RESET)
             continue
         telefone_ajustado = f"({telefone[:2]}) {telefone[2:7]}-{telefone[7:]}"
 
@@ -397,12 +432,12 @@ def add_cliente():
                 ),
             )
             conexao.commit()
-            print(f"O cliente '{nome_cliente}' foi salvo com sucesso! ")
+            print(Fore.GREEN + f"O cliente '{nome_cliente}' foi salvo com sucesso! " + Fore.RESET)
             return nome_cliente
 
         except mysql.connector.Error as e:
             conexao.rollback()
-            print(f"Ocorreu um erro: {e}")
+            print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
             return "Sem cliente"
         finally:
             fechar_execusao(
@@ -411,9 +446,11 @@ def add_cliente():
             )   
 def add_categoria():
     while True:
-        print("\n----- NOVA CATEGORIA --------")
-        nome_categoria = force_str("Digite o nome da nova categoria: ").lower()
-
+        print(Fore.CYAN + Style.BRIGHT + "\n----- NOVA CATEGORIA --------" + Fore.RESET)
+        nome_categoria = force_str("Digite o nome da nova categoria ou [0] para sair: ").lower()
+        if nome_categoria == '0':
+            print("Voltando ao menu")
+            break
         conexao = obter_conexao()
         cursor = conexao.cursor()
         try:
@@ -421,21 +458,17 @@ def add_categoria():
                 """
                     INSERT INTO categorias(nome)
                     VALUES (%s)
-                """,
-                (
-                    nome_categoria
-                ),
-            )
+                """,(nome_categoria,))
             conexao.commit()
-            print(f"A categoria '{nome_categoria}' foi salva com sucesso! ")
+            print(Fore.GREEN + f"A categoria '{nome_categoria}' foi salva com sucesso! " + Fore.RESET)
             return nome_categoria
 
         except mysql.connector.Error as e:
             conexao.rollback()
-            print(f"Ocorreu um erro: {e}")
-            return "Sem cliente"
+            print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
+            return "Sem categoria"
         finally:
             fechar_execusao(
             conexao if "conexao" in locals() else None, 
             cursor if "cursor" in locals() else None
-            )      
+            )
