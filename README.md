@@ -1,53 +1,37 @@
-🍷 G2 Distribuidora System
-Um sistema de gestão de vendas, estoque e CRM desenvolvido em Python com integração MySQL, focado na automação de processos para distribuidoras de bebidas. O sistema permite um controle rigoroso de estoque, aplicação de políticas de preços (atacado/varejo), gestão de cupons e análise de dados.
+# 🍷 G2 Distribuidora System
 
-🚀 Funcionalidades Principais
-Ponto de Venda (PDV) Inteligente:
+Um sistema robusto de gestão de vendas, estoque e CRM desenvolvido em Python, focado na automação de processos para distribuidoras de bebidas. O sistema oferece controle total sobre o ciclo de vendas, desde o cadastro de produtos até a análise de dados financeiros.
 
-Registro de vendas com verificação de estoque em tempo real.
+## 🚀 Funcionalidades Principais
 
-Aplicação automática de descontos por atacado baseada em regras de negócio.
+* **Ponto de Venda (PDV) Inteligente:**
+    * Registro de vendas com verificação dinâmica de estoque.
+    * Aplicação automática de descontos por atacado baseada em regras de negócio.
+    * Gestão de cupons de desconto com limite de uso.
+* **Gestão de Estoque:**
+    * Controle de produtos com validade e notas de qualidade.
+    * Relatórios de estoque crítico automatizados (suporte para exportação via Pandas).
+    * Funcionalidade de reposição em lote para agilizar o dia a dia.
+* **Analytics & BI:**
+    * Dashboard interativo (via Streamlit) para visualização de faturamento e ticket médio.
+    * Ranking de produtos mais vendidos e análise de métodos de pagamento preferidos.
+* **Segurança:**
+    * Controle de acesso por níveis de usuário (Administrador/Vendedor).
+    * Validação de dados rigorosa com tratamento de erros integrado ao MySQL.
 
-Vínculo obrigatório com clientes e controle de pagamentos.
+## 🛠 Tecnologias Utilizadas
 
-Gestão de Estoque:
+* **Linguagem:** Python 3.x
+* **Banco de Dados:** MySQL (mysql-connector)
+* **Análise de Dados:** Pandas
+* **Interface:** CLI estilizada (Colorama) e Dashboard (Streamlit)
 
-Cadastro de produtos com controle de validade e notas de avaliação.
+## 📂 Estrutura do Projeto
 
-Relatórios de estoque crítico automatizados com exportação (via Pandas).
-
-Funcionalidade de reposição em lote.
-
-Marketing e CRM:
-
-Gestão de cupons de desconto com limite de uso.
-
-Dashboard Analytics interativo para visualização de tendências.
-
-Ranking dos produtos mais vendidos e análise de ticket médio.
-
-Segurança e Manutenção:
-
-Controle de acesso por níveis de usuário (Administrador/Vendedor).
-
-Validação de dados robusta para evitar corrupção no banco de dados.
-
-🛠 Tecnologias Utilizadas
-Linguagem: Python 3.x
-
-Banco de Dados: MySQL (utilizando mysql-connector)
-
-Análise de Dados: Pandas
-
-Interface: CLI (Interface de Linha de Comando) estilizada com Colorama
-
-Analytics: Streamlit
-
-📂 Estrutura do Projeto
-Plaintext
+```text
 ├── marketing_fornecedores/   # Módulos de marketing e analytics
 ├── consulta_relatorio/       # Lógica de exportação e relatórios
-├── connectsql.py             # Gerenciamento de conexões com banco
-├── forces.py                 # Funções de validação de input (CLI)
+├── connectsql.py             # Gerenciamento de conexões (Singleton/Pool)
+├── forces.py                 # Validações de input (Input Sanitization)
 ├── main.py                   # Ponto de entrada do sistema
 └── README.md
