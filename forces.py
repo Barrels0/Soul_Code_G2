@@ -16,10 +16,11 @@ def force_int(message: str) -> int:
 def force_float(message: str) -> float:
     while True:
         try:
-            return float(input(Fore.YELLOW + message + Fore.RESET))
-        except:
-            print(Fore.RED + "\n[✖] ERRO: Digite um texto válido." + Fore.RESET)
-            continue
+            entrada = input(Fore.YELLOW + message + Fore.RESET).strip()
+            entrada_corrigida = entrada.replace(",", ".")
+            return float(entrada_corrigida)
+        except ValueError:
+            print(Fore.RED + "\n[✖] ERRO: Digite um número decimal válido (Ex: 15.50 ou 15,50)." + Fore.RESET)
 
 
 def force_str(message: str) -> str:

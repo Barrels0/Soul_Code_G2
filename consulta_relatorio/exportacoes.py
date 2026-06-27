@@ -11,7 +11,7 @@ def perguntar_exportacao(df, nome_padrao="relatorio"):
 
     print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
- █  {Fore.YELLOW}EXPORTAR RESULTADOS{Fore.CYAN}                                                 █
+ █  {Fore.YELLOW}EXPORTAR RESULTADOS{Fore.CYAN}                                               █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
 
  {Fore.WHITE}[1]{Fore.CYAN} Sim, em CSV (Abre no Excel)
@@ -20,8 +20,6 @@ def perguntar_exportacao(df, nome_padrao="relatorio"):
  ══════════════════════════════════════════════════════════════════════{Fore.RESET}""")
     
     escolha = force_int(Fore.YELLOW + "➤ Sua escolha: " + Fore.RESET)
-    
-    escolha = force_int(Fore.YELLOW + "Sua escolha: " + Fore.RESET)
     
     try:
         if escolha == 1:

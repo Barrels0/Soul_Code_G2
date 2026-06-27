@@ -31,13 +31,16 @@ def new_user():
     conexao = obter_conexao()
     cursor = conexao.cursor()
     try:
-        while True:#colocar opção de sair da função e voltar ao menu
+        while True:
             new_user = force_str(Fore.YELLOW + "➤ Digite o nome do usuário a ser cadastrado (ou [0] para sair): " + Fore.RESET)
             if new_user == '0':
                 print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
                 return None
-            try:  # pergunta login e senha desejada e valida se é possivel
-                senha = force_int(Fore.YELLOW + "➤ Digite a senha desejada (SOMENTE NÚMEROS): " + Fore.RESET)
+            try: 
+                senha = force_int(Fore.YELLOW + "➤ Digite a senha desejada (SOMENTE NÚMEROS - [0] PARA SAIR): " + Fore.RESET)
+                if senha == '0':
+                    print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
+                    return None
             except ValueError:
                 print(Fore.RED + "\n[✖] ERRO: Digite somente números para a senha." + Fore.RESET)
                 continue
@@ -56,10 +59,13 @@ def new_user():
                 
             try:
                 chose = force_int(f"""{Fore.CYAN}{Style.BRIGHT}
-┌── SELECIONE O NÍVEL DE ACESSO ──────────────────┐
-│ {Fore.WHITE}[1]{Fore.CYAN} O usuário será um FUNCIONÁRIO             │
-│ {Fore.WHITE}[2]{Fore.CYAN} O usuário será um ADMINISTRADOR           │
-└─────────────────────────────────────────────────┘
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}SELECIONE O NÍVEL DE ACESSO{Fore.CYAN}                                       █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+
+ {Fore.WHITE}[1]{Fore.CYAN} O usuário será um FUNCIONÁRIO
+ {Fore.WHITE}[2]{Fore.CYAN} O usuário será um ADMINISTRADOR
+ ══════════════════════════════════════════════════════════════════════
 {Fore.YELLOW}➤ Escolha uma opção: {Fore.RESET}""")
                 if chose == 1:
                     cargo = "Funcionario"
@@ -71,41 +77,41 @@ def new_user():
             except ValueError:
                 print(Fore.RED + "\n[✖] ERRO: Selecione apenas números." + Fore.RESET)
                 continue
-            confirm = force_int(Fore.YELLOW + "\n➤ Para confirmar, digite a senha master de ADM (ou [0] para sair): " + Fore.RESET)
-            
-            if confirm == 0:
-                print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
-                break
+            while True:
+                confirm = force_int(Fore.YELLOW + "\n➤ Para confirmar, digite a senha master de ADM (ou [0] para sair): " + Fore.RESET) 
+                if confirm == 0:
+                    print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
+                    break
 
-            elif confirm != 1234:
-                print(Fore.RED + "\n[✖] ERRO: Senha de administrador inválida. Acesso negado." + Fore.RESET)
-                continue
-
+                elif confirm != 1234:
+                    print(Fore.RED + "\n[✖] ERRO: Senha de administrador inválida. Acesso negado." + Fore.RESET)
+                    continue
+                else:
+                    break
             try:
                 cursor.execute(
-                    """SELECT usuario,gmail FROM usuarios WHERE usuario = %s OR gmail = %s AND ativo = 1 """, (new_user,email)
-                )  # carrega do banco de dados se tem algum usuario com o mesmo nome do que vai ser cadastrado
+                    """SELECT usuario,gmail FROM usuarios WHERE (usuario = %s OR gmail = %s) AND ativo = 1 """, (new_user,email)
+                )  
                 found = cursor.fetchone()
                 
 
-                if found:  # caso já exista esse nome ele manda mostra essa mensagem e volta para o incio
+                if found:
                     print(Fore.RED + f"\n[✖] O nome de usuário '{new_user}' ou o e-mail já existem! Tente novamente." + Fore.RESET)
-                    continue  # aqui ele volta para o começo do loop
+                    continue
 
                 cursor.execute(
                     "INSERT INTO usuarios(usuario, senha, cargo, gmail) VALUES(%s,%s,%s,%s)",
                     (new_user, senha, cargo, email),
-                )  # abre o banco de dados e insere na tabela usuarios as variaveis, e tudo isso ocorre
-                # depois das validações
-                conexao.commit()  # salva no db
+                ) 
+                conexao.commit()
 
                 print(Fore.GREEN + Style.BRIGHT + f"\n[✔] Sucesso! Usuário '{new_user}' cadastrado como {cargo}." + Fore.RESET)
-                break
+                return True
             except mysql.connector.Error as erro:
-                conexao.rollback()  # se der algum erro no banco de dados devolve os valores iniciais para não dar erro ou corromper arquivos e manter a integridade dos dados
+                conexao.rollback()
                 print(Fore.RED + Style.BRIGHT + f"\n[✖] Ocorrreu um erro crítico no banco de dados: {erro}" + Fore.RESET)
 
-    finally:  # independente do que aconteça fecha o banco
+    finally:
         fechar_execusao(
         conexao if "conexao" in locals() else None, 
         cursor if "cursor" in locals() else None
@@ -139,7 +145,7 @@ def login():
                 )
                 found = (
                     cursor.fetchone()
-                )  # confere se o usuario existe e senha está correta
+                )
 
                 if not found:
                     print(Fore.RED + "\n[✖] Login ou senha incorretos. Tente novamente." + Fore.RESET)
@@ -147,7 +153,7 @@ def login():
 
                 id_user, usuario, senha, cargo = found
 
-                if cargo == "Admin": # atribui o cargo a variavel e devolve pra main para poder fazer o menu expecifico para cada um
+                if cargo == "Admin":
                     print(Fore.GREEN + Style.BRIGHT + f"\n[✔] Login aprovado! Bem-vindo(a) ao painel de ADMINISTRADOR." + Fore.RESET)
                     return "Admin",id_user
 
@@ -205,10 +211,10 @@ def recuperar_senha(id_operador):
             
             if resultado:
                 print(f"""{Fore.GREEN}{Style.BRIGHT}
-┌─────────────────────────────────────────────────┐
-│ [✔] Identidade verificada com sucesso!          │
-│ Sua senha atual é: {Fore.YELLOW}{resultado[0]:<29}{Fore.GREEN}│
-└─────────────────────────────────────────────────┘{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  [✔] IDENTIDADE VERIFICADA COM SUCESSO!                            █
+ █  Sua senha atual é: {Fore.YELLOW}{str(resultado[0]):<47}{Fore.GREEN}█
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
             else:
                 print(Fore.RED + "\n[✖] ERRO: Usuário não localizado no banco de dados." + Fore.RESET)
                 
@@ -229,7 +235,7 @@ def recuperar_senha(id_operador):
         
         print(Fore.CYAN + "\nPreparando envio pelo WhatsApp. Não feche o navegador que será aberto..." + Fore.RESET)
         kit.sendwhatmsg_instantly(f"{telefone}",f"Olá!\n\nSeu código de verificação para acesso ao sistema é: {codigo_gerado}\n\nSe você não solicitou esta recuperação, por favor ignore este aviso.", wait_time=10)
-        time.sleep(5)
+        time.sleep()
         pyautogui.press('enter')
         print(Fore.GREEN + "\n[✔] Mensagem de verificação disparada pelo WhatsApp com sucesso!" + Fore.RESET)
         
@@ -248,10 +254,10 @@ def recuperar_senha(id_operador):
             
             if resultado:
                 print(f"""{Fore.GREEN}{Style.BRIGHT}
-┌─────────────────────────────────────────────────┐
-│ [✔] Identidade verificada com sucesso!          │
-│ Sua senha atual é: {Fore.YELLOW}{resultado[0]:<29}{Fore.GREEN}│
-└─────────────────────────────────────────────────┘{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  [✔] IDENTIDADE VERIFICADA COM SUCESSO!                            █
+ █  Sua senha atual é: {Fore.YELLOW}{str(resultado[0]):<47}{Fore.GREEN}█
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
                 if resultado[1] == "Admin":
                     return "Admin"
                 else:

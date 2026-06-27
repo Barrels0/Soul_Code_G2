@@ -1,21 +1,23 @@
 import mysql.connector
 import datetime
 import pandas as pd
-from connectsql import obter_conexao
+from connectsql import obter_conexao, fechar_execusao
 from forces import force_int, force_float, force_str, bsc_id
 from consulta_relatorio.exportacoes import perguntar_exportacao
 from colorama import Fore, Style
+from interface import pausar, limpar_tela
 
 def relatorio_expresso():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
- █  {Fore.YELLOW}RELATÓRIO EXPRESSO: ESTOQUE CRÍTICO{Fore.CYAN}                                          █
+ █  {Fore.YELLOW}RELATÓRIO EXPRESSO: ESTOQUE CRÍTICO{Fore.CYAN}                              █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
 
     try:
         conexao = obter_conexao()
         
         if not conexao:
+            print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
             return
 
         query = """
@@ -40,17 +42,17 @@ def relatorio_expresso():
         print(Fore.RED + f"Erro inesperado ao gerar o relatório expresso: {erro}" + Fore.RESET)
 
     finally:
-        if "conexao" in locals() and conexao.is_connected():
-            conexao.close()
-
-
+        fechar_execusao(
+            conexao if "conexao" in locals() else None, 
+            None 
+        )
 
 
 def busca():
     while True: 
         print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
- █  {Fore.YELLOW}BUSCA AVANÇADA{Fore.CYAN}                                                      █
+ █  {Fore.YELLOW}BUSCA AVANÇADA{Fore.CYAN}                                                    █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
 
  {Fore.WHITE}[1]{Fore.CYAN} Buscar por nome
@@ -104,6 +106,10 @@ def busca():
             elif opcao == 2:
                 cursor.execute("SELECT id_categoria, nome FROM categorias WHERE ativo = 1")
                 categorias = cursor.fetchall()
+                
+                if not categorias:
+                    print(Fore.YELLOW + "\nNenhuma categoria encontrada no banco de dados." + Fore.RESET)
+                    continue
                     
                 for i in categorias:
                     print(Fore.WHITE + f"[{i[0]}] - {i[1]}" + Fore.RESET)
@@ -114,7 +120,7 @@ def busca():
                     continue
                 if categoria == 0:
                     print("Voltando ao menu")
-                    break
+                    continue
                         
                 cursor.execute("""
                     SELECT
@@ -136,6 +142,10 @@ def busca():
             elif opcao == 3:
                 cursor.execute("SELECT id_fornecedor, nome FROM fornecedores WHERE ativo = 1")
                 fornecedores = cursor.fetchall()
+                
+                if not fornecedores:
+                    print(Fore.YELLOW + "\nNenhum fornecedor encontrado no banco de dados." + Fore.RESET)
+                    continue
                     
                 for i in fornecedores:
                     print(Fore.WHITE + f"[{i[0]}] - {i[1]}" + Fore.RESET)
@@ -144,9 +154,10 @@ def busca():
                 except ValueError:
                     print("Digite apenas números")
                     continue
-                if categoria == 0:
+                if fornecedor == 0:
                     print("Voltando ao menu")
-                    break
+                    continue
+                    
                 cursor.execute("""
                     SELECT
                         produtos.nome,
@@ -172,6 +183,8 @@ def busca():
                     print(
                         f"{bebida[0]} | {bebida[1]} | {bebida[2]} | {Fore.GREEN}R$ {bebida[3]:.2f}{Fore.RESET} | Estoque: {bebida[4]}"
                     )
+            pausar()
+            limpar_tela()
 
         except mysql.connector.Error as e:
             print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
@@ -180,16 +193,17 @@ def busca():
             print(Fore.RED + f"Erro inesperado: {i}" + Fore.RESET)
 
         finally:
-            if "conexao" in locals() and conexao.is_connected():
-                cursor.close()
-                conexao.close()
+            fechar_execusao(
+                conexao if "conexao" in locals() else None, 
+                cursor if "cursor" in locals() else None
+            )
 
 
 def filtros():
     while True:
         print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
- █  {Fore.YELLOW}FILTROS DE CONSULTA{Fore.CYAN}                                                █
+ █  {Fore.YELLOW}FILTROS DE CONSULTA{Fore.CYAN}                                               █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
 
  {Fore.WHITE}[1]{Fore.CYAN} Filtrar por Faixa de Preço
@@ -200,8 +214,11 @@ def filtros():
 
         try:
             opcao = force_int(Fore.YELLOW + "➤ Escolha uma opção: " + Fore.RESET)
-            conexao = obter_conexao()
+            if opcao == 0:
+                print("Saindo dos filtros e voltando ao menu principal...")
+                break
 
+            conexao = obter_conexao()
             if conexao is None:
                 print(Fore.RED + "Erro ao conectar ao banco." + Fore.RESET)
                 return
@@ -209,20 +226,16 @@ def filtros():
             cursor = conexao.cursor()
 
             try:
-                if opcao == 0:
-                    print("Saindo dos filtros e voltando ao menu principal...")
-                    break # Encerra o laço While True
-
-                elif opcao == 1:
+                if opcao == 1:
                     try:
                         preco_minimo = force_float("➤ Preço mínimo: R$ ")
                         preco_maximo = force_float("➤ Preço máximo: R$ ")
                         confirm = force_int(Fore.YELLOW + "➤ Para buscar digite [1] ou [0] para cancelar: " + Fore.RESET)
                     except ValueError:
                         print(Fore.RED + "Digite apenas números!" + Fore.RESET)
-                        continue # Volta pro topo do laço
+                        continue 
                         
-                    if confirm == 0:
+                    if confirm != 1:
                         print("Filtro cancelado. Voltando ao menu...")
                         continue
 
@@ -245,6 +258,10 @@ def filtros():
                     cursor.execute("SELECT id_categoria, nome FROM categorias WHERE ativo = 1")
                     categorias = cursor.fetchall()
                     
+                    if not categorias:
+                        print(Fore.YELLOW + "\nNenhuma categoria encontrada no banco de dados." + Fore.RESET)
+                        continue
+                        
                     for i in categorias:
                         print(Fore.WHITE + f"[{i[0]}] - {i[1]}" + Fore.RESET)
                         
@@ -276,6 +293,10 @@ def filtros():
                     cursor.execute("SELECT id_categoria, nome FROM categorias WHERE ativo = 1")
                     categorias = cursor.fetchall()
                     
+                    if not categorias:
+                        print(Fore.YELLOW + "\nNenhuma categoria encontrada no banco de dados." + Fore.RESET)
+                        continue
+                        
                     for i in categorias:
                         print(Fore.WHITE + f"[{i[0]}] - {i[1]}" + Fore.RESET)
                         
@@ -287,8 +308,13 @@ def filtros():
                             
                         preco_minimo = force_float("➤ Preço mínimo: R$ ")
                         preco_maximo = force_float("➤ Preço máximo: R$ ")
+                        confirm = force_int(Fore.YELLOW + "➤ Para buscar digite [1] ou [0] para cancelar: " + Fore.RESET)
                     except ValueError:
                         print(Fore.RED + "Digite apenas números!" + Fore.RESET)
+                        continue
+
+                    if confirm != 1:
+                        print("Filtro cancelado. Voltando ao menu...")
                         continue
 
                     cursor.execute("""
@@ -336,9 +362,10 @@ def filtros():
                 print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
 
             finally:
-                if 'conexao' in locals() and conexao.is_connected():
-                    cursor.close()
-                    conexao.close()
+                fechar_execusao(
+                    conexao if "conexao" in locals() else None, 
+                    cursor if "cursor" in locals() else None
+                )
                 
         except Exception as i:
             print(Fore.RED + f"Erro inesperado: {i}" + Fore.RESET)
@@ -346,10 +373,14 @@ def filtros():
 def painel_estatisticas():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
- █  {Fore.YELLOW}PAINEL DE ESTATÍSTICAS E PRODUTOS MAIS VENDIDOS{Fore.CYAN}                                          █
+ █  {Fore.YELLOW}PAINEL DE ESTATÍSTICAS E PRODUTOS MAIS VENDIDOS{Fore.CYAN}                   █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     
     conexao = obter_conexao()
+    if not conexao:
+        print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+        return
+        
     cursor = conexao.cursor()
     
     try:
@@ -397,16 +428,17 @@ def painel_estatisticas():
     except mysql.connector.Error as e:
         print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
     finally:
-        if "conexao" in locals() and conexao.is_connected():
-            cursor.close()
-            conexao.close()
+        fechar_execusao(
+            conexao if "conexao" in locals() else None, 
+            cursor if "cursor" in locals() else None
+        )
 
 
 def catalogo_ordenado():
     while True:
         print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
- █  {Fore.YELLOW}ORDENAÇÃO DO CATÁLOGO{Fore.CYAN}                                              █
+ █  {Fore.YELLOW}ORDENAÇÃO DO CATÁLOGO{Fore.CYAN}                                             █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
 
  {Fore.WHITE}[1]{Fore.CYAN} Ordenar por Nome
@@ -449,6 +481,10 @@ def catalogo_ordenado():
         
         try:
             conexao = obter_conexao()
+            if not conexao:
+                print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+                continue
+                
             cursor = conexao.cursor()
             cursor.execute(query)
             bebidas = cursor.fetchall()
@@ -471,23 +507,30 @@ def catalogo_ordenado():
                     print(f"= {nome} | Base: {Fore.GREEN}R${float(preco_venda):.2f}{Fore.RESET}{tag_promo} | Nota:{nota} | Quantidade:{quantidade_estoque}")
                 
                 print(Fore.CYAN + "="*60 + Fore.RESET)
-                
+                pausar()
+                limpar_tela()
+
         except mysql.connector.Error as e:
             print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
     
         finally:
-            if 'conexao' in locals() and conexao.is_connected():
-                cursor.close()
-                conexao.close()
+            fechar_execusao(
+                conexao if "conexao" in locals() else None, 
+                cursor if "cursor" in locals() else None
+            )
 
 
 def historico_vendas():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
- █  {Fore.YELLOW}HISTÓRICO DE VENDAS{Fore.CYAN}                                          █
+ █  {Fore.YELLOW}HISTÓRICO DE VENDAS{Fore.CYAN}                                               █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     
     conexao = obter_conexao()
+    if not conexao:
+        print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+        return
+        
     cursor = conexao.cursor()
     
     try:
@@ -537,6 +580,7 @@ def historico_vendas():
     except mysql.connector.Error as e:
         print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {e}" + Fore.RESET)
     finally:
-        if "conexao" in locals() and conexao.is_connected():
-            cursor.close()
-            conexao.close()
+        fechar_execusao(
+            conexao if "conexao" in locals() else None, 
+            cursor if "cursor" in locals() else None
+        )

@@ -18,14 +18,8 @@ from marketing_fornecedores.marketing import (
     reclame_aqui,
 )
 from produtos_estoque1.def1 import (
-    adicionar_item,
-    alterar_preco,
-    repor_estoque,
-    alterar_nome,
-    off_prod,
-    atv_prod,
-    add_cliente,
-    add_categoria,
+    adicionar_item, alterar_preco, repor_estoque, alterar_nome, 
+    add_cliente, add_categoria, off_prod, atv_prod, off_cli, atv_cli, off_forn, atv_forn
 )
 from vendas_e_caixa.defs import exp_nota, nota_fiscal, registar_venda
 from continuar import continuar_sistema_f, continuar_sistema_a
@@ -60,7 +54,7 @@ while True:
 
         if escolha == 0:
             print(Fore.YELLOW + "\n[!] Saindo do sistema. Até logo!" + Fore.RESET)
-            break
+            exit()
 
         elif escolha == 1:
             cadastro = new_user()
@@ -76,7 +70,7 @@ while True:
                 continue
             break
         elif escolha == 3:
-            busca = force_str(
+            termo_busca = force_str(
                 Fore.YELLOW
                 + "\n➤ Digite o nome do seu usuário ou o seu e-mail: "
                 + Fore.RESET
@@ -87,7 +81,7 @@ while True:
 
             cursor.execute(
                 "SELECT id_usuario, usuario, gmail FROM usuarios WHERE gmail = %s OR usuario = %s",
-                (busca, busca),
+                (termo_busca, termo_busca),
             )
             result = cursor.fetchone()
 
@@ -133,6 +127,7 @@ finally:
         conexao if "conexao" in locals() else None,
         cursor if "cursor" in locals() else None,
     )
+limpar_tela()
     
 try:
     while True:
@@ -146,118 +141,162 @@ try:
 
             if comando == 0:
                 print(f"""{Fore.GREEN}{Style.BRIGHT}
-══════════════════════════════════════════════════
-  Obrigado por visitar nossa loja!
-  O caixa total do turno fechou em: R$ {caixa:.2f}
-══════════════════════════════════════════════════{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  OBRIGADO POR VISITAR NOSSA LOJA!                 █
+ █  CAIXA DO TURNO: R$ {caixa:>10.2f}                    █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
                 caixa = 0.00
                 exit()
+            
             elif comando == 1:
                 registar_venda(id_operador)
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
             elif comando == 2:
                 nota_fiscal()
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
             elif comando == 3:
                 exp_nota(id_operador)
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
+                
             elif comando == 4:
                 adicionar_item()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
             elif comando == 5:
                 repor_estoque()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
             elif comando == 6:
                 alterar_preco()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
             elif comando == 7:
                 alterar_nome()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
             elif comando == 8:
                 off_prod()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
             elif comando == 9:
                 atv_prod()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
             elif comando == 10:
                 add_cliente()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
             elif comando == 11:
+                conexao = obter_conexao()
+                cursor = conexao.cursor()
+                cursor.execute("SELECT id_cliente, nome, cnpj_cpf FROM clientes")
+                clientes = cursor.fetchall()        
+                print(Fore.CYAN + Style.BRIGHT + "\nEsses são os nossos clientes:")
+                for linha in clientes:
+                    print(Fore.WHITE + f"-> ID: {linha[0]} | Nome: {linha[1]} | Doc: {linha[2]}")
+
+                off_cli()
+                limpar_tela()
+                continuar_sistema_a(caixa)
+            elif comando == 12:
+                conexao = obter_conexao()
+                cursor = conexao.cursor()
+                cursor.execute("SELECT id_cliente, nome, cnpj_cpf FROM clientes")
+                clientes = cursor.fetchall()        
+                print(Fore.CYAN + Style.BRIGHT + "\nEsses são os nossos clientes:")
+                for linha in clientes:
+                    print(Fore.WHITE + f"-> ID: {linha[0]} | Nome: {linha[1]} | Doc: {linha[2]}")
+
+                atv_cli()
+                limpar_tela()
+                continuar_sistema_a(caixa)
+            elif comando == 13:
                 add_categoria()
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 12:
+                continuar_sistema_a(caixa)
+                
+            elif comando == 14:
                 busca()
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 13:
+                continuar_sistema_a(caixa)
+            elif comando == 15:
                 relatorio_expresso()
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 14:
+                continuar_sistema_a(caixa)
+            elif comando == 16:
                 historico_vendas()
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 15:
+                continuar_sistema_a(caixa)
+            elif comando == 17:
                 catalogo_ordenado()
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 16:
+                continuar_sistema_a(caixa)
+            elif comando == 18:
                 filtros()
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 17:
+                continuar_sistema_a(caixa)
+            elif comando == 19:
                 painel_estatisticas()
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 18:
+                continuar_sistema_a(caixa)
+                
+            elif comando == 20:
                 promocoes()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 19:
+                continuar_sistema_a(caixa)
+            elif comando == 21:
                 cadastrar_fornecedor()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 20:
+                continuar_sistema_a(caixa)
+            elif comando == 22:
+                conexao = obter_conexao()
+                cursor = conexao.cursor()
+                cursor.execute("SELECT id_fornecedor, nome FROM fornecedores")
+                fornecedores = cursor.fetchall()        
+                print(Fore.CYAN + Style.BRIGHT + "\nEsses são os nossos clientes:")
+                for linha in fornecedores:
+                    print(Fore.WHITE + f"-> ID: {linha[0]} | Nome: {linha[1]}")
+                off_forn()
+                limpar_tela()
+                continuar_sistema_a(caixa)
+            elif comando == 23:
+                atv_forn()
+                limpar_tela()
+                continuar_sistema_a(caixa)
+            elif comando == 24:
                 cadastrar_cupom()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 21:
+                continuar_sistema_a(caixa)
+            elif comando == 25:
                 relatorio_cupons_mais_utilizados()
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
-            elif comando == 22:
+                continuar_sistema_a(caixa)
+            elif comando == 26:
                 abrir_dashboard()
-                continuar_sistema_a()
-            elif comando == 23:
+                continuar_sistema_a(caixa)
+            elif comando == 27:
                 reclame_aqui(id_operador)
                 pausar()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
             else:
                 print(Fore.RED + "\n[✖] ERRO: Opção inválida. Tente novamente." + Fore.RESET)
+                pausar()
                 limpar_tela()
-                continuar_sistema_a()
+                continuar_sistema_a(caixa)
 
         elif user_ativ == "Funcionario":
             menu_funca(caixa)
@@ -269,79 +308,81 @@ try:
 
             if comando == 0:
                 print(f"""{Fore.GREEN}{Style.BRIGHT}
-══════════════════════════════════════════════════
-  Obrigado por visitar nossa loja!
-  O caixa total do turno fechou em: R$ {caixa:.2f}
-══════════════════════════════════════════════════{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  OBRIGADO POR VISITAR NOSSA LOJA!                 █
+ █  CAIXA DO TURNO: R$ {caixa:>10.2f}                █
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
                 exit()
             elif comando == 1:
-                registar_venda()
+                # ALTERADO: Adicionado id_operador como argumento
+                registar_venda(id_operador)
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 2:
                 nota_fiscal()
                 pausar()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 3:
-                exp_nota()
+                # ALTERADO: Adicionado id_operador como argumento
+                exp_nota(id_operador)
                 pausar()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 4:
                 adicionar_item()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 5:
                 repor_estoque()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 6:
                 alterar_nome()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 7:
                 add_cliente()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 8:
                 add_categoria()
                 pausar()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 9:
                 busca()
                 pausar()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 10:
                 catalogo_ordenado()
                 pausar()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 11:
                 filtros()
                 pausar()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 12:
                 cadastrar_fornecedor()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 13:
                 relatorio_cupons_mais_utilizados()
                 pausar()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             elif comando == 14:
                 reclame_aqui(id_operador)
                 pausar()
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
             else:
                 print(Fore.RED + "\n[✖] ERRO: Opção inválida. Tente novamente." + Fore.RESET)
                 limpar_tela()
-                continuar_sistema_f()
+                continuar_sistema_f(caixa)
 
 except Exception as i:
     print(Fore.RED + Style.BRIGHT + f"\n[✖] Erro inesperado: {i}" + Fore.RESET)

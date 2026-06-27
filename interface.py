@@ -1,6 +1,6 @@
 from connectsql import obter_conexao, fechar_execusao
 import mysql.connector
-import os
+import os,sys,time
 from time import sleep
 from colorama import Fore, Style
 
@@ -9,13 +9,13 @@ def menu_adm(caixa_atual):
     Função dedicada a imprimir o menu e o estoque para o Administrador
     """
     texto_caixa = f"R$ {caixa_atual:.2f}"
-    espacos = " " * (47 - len(texto_caixa))
+    espacos = " " * (36 - len(texto_caixa))
 
     print(f"""{Fore.CYAN}{Style.BRIGHT}
- █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
- █  {Fore.YELLOW}🏪 DISTRIBUIDORA G2{Fore.CYAN}                                                █
- █  {Fore.WHITE}💵 Caixa Acumulado: {Fore.GREEN}{texto_caixa}{espacos}{Fore.CYAN}█
- █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
+ █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+ █  {Fore.YELLOW}🏪 DISTRIBUIDORA G2{Fore.CYAN}                                                  █
+ █  {Fore.WHITE}💵 Total gasto por esse usuario: {Fore.GREEN}{texto_caixa}{espacos}{Fore.CYAN}█
+ █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     
     conexao = obter_conexao()
     cursor = conexao.cursor()
@@ -70,21 +70,23 @@ def menu_adm(caixa_atual):
    {Fore.WHITE}[1]{Fore.CYAN} 🛒 Registrar Venda             {Fore.WHITE}[2]{Fore.CYAN} 🧾 Nota Fiscal (Sessão)
    {Fore.WHITE}[3]{Fore.CYAN} 📤 Exportar Notinha
 
- {Fore.MAGENTA}❖ PRODUTOS E ESTOQUE {Fore.CYAN}───────────────────────────────────────────────
+ {Fore.MAGENTA}❖ PRODUTOS, ESTOQUE E CLIENTES {Fore.CYAN}─────────────────────────────────────
    {Fore.WHITE}[4]{Fore.CYAN} 📦 Cadastrar Nova Bebida        {Fore.WHITE}[5]{Fore.CYAN} 🔄 Repor Estoque
    {Fore.WHITE}[6]{Fore.CYAN} 💲 Alterar Preço                {Fore.WHITE}[7]{Fore.CYAN} ✏️ Alterar Nome
    {Fore.WHITE}[8]{Fore.CYAN} 🔴 Desativar Bebida             {Fore.WHITE}[9]{Fore.CYAN} 🟢 Reativar Bebida
-   {Fore.WHITE}[10]{Fore.CYAN} 👥 Adicionar Cliente           {Fore.WHITE}[11]{Fore.CYAN} 🏷️ Adicionar Categoria
+   {Fore.WHITE}[10]{Fore.CYAN} 👥 Adicionar Cliente           {Fore.WHITE}[11]{Fore.CYAN} 🔴 Desativar Cliente
+   {Fore.WHITE}[12]{Fore.CYAN} 🟢 Reativar Cliente            {Fore.WHITE}[13]{Fore.CYAN} 🏷️ Adicionar Categoria
 
  {Fore.MAGENTA}❖ CONSULTAS E RELATÓRIOS {Fore.CYAN}───────────────────────────────────────────
-   {Fore.WHITE}[12]{Fore.CYAN} 🔍 Busca Avançada              {Fore.WHITE}[13]{Fore.CYAN} ⚡ Relatórios Expresso
-   {Fore.WHITE}[14]{Fore.CYAN} 📜 Histórico de Vendas         {Fore.WHITE}[15]{Fore.CYAN} 🗂️ Catálogo Ordenado
-   {Fore.WHITE}[16]{Fore.CYAN} 🎛️ Filtro                       {Fore.WHITE}[17]{Fore.CYAN} 📊 Estatísticas e Balanço
+   {Fore.WHITE}[14]{Fore.CYAN} 🔍 Busca Avançada              {Fore.WHITE}[15]{Fore.CYAN} ⚡ Relatórios Expresso
+   {Fore.WHITE}[16]{Fore.CYAN} 📜 Histórico de Vendas         {Fore.WHITE}[17]{Fore.CYAN} 🗂️ Catálogo Ordenado
+   {Fore.WHITE}[18]{Fore.CYAN} 🎛️ Filtro                       {Fore.WHITE}[19]{Fore.CYAN} 📊 Estatísticas e Balanço
 
  {Fore.MAGENTA}❖ MARKETING E FORNECEDORES {Fore.CYAN}─────────────────────────────────────────
-   {Fore.WHITE}[18]{Fore.CYAN} 🎁 Promoções                   {Fore.WHITE}[19]{Fore.CYAN} 🤝 Novo Fornecedor
-   {Fore.WHITE}[20]{Fore.CYAN} 🎟️ Adicionar Cupom              {Fore.WHITE}[21]{Fore.CYAN} 🏆 Cupons Mais Utilizados
-   {Fore.WHITE}[22]{Fore.CYAN} 📈 Ver Dashboard Analytics     {Fore.WHITE}[23]{Fore.CYAN} 🗣️ Reclame Aqui
+   {Fore.WHITE}[20]{Fore.CYAN} 🎁 Promoções                   {Fore.WHITE}[21]{Fore.CYAN} 🤝 Novo Fornecedor
+   {Fore.WHITE}[22]{Fore.CYAN} 🔴 Desativar Fornecedor        {Fore.WHITE}[23]{Fore.CYAN} 🟢 Reativar Fornecedor
+   {Fore.WHITE}[24]{Fore.CYAN} 🎟️ Adicionar Cupom              {Fore.WHITE}[25]{Fore.CYAN} 🏆 Cupons Mais Utilizados
+   {Fore.WHITE}[26]{Fore.CYAN} 📈 Ver Dashboard Analytics     {Fore.WHITE}[27]{Fore.CYAN} 🗣️ Reclame Aqui
 
  ──────────────────────────────────────────────────────────────────────
    {Fore.RED}[0]{Fore.WHITE} ❌ Sair do Sistema
@@ -169,7 +171,7 @@ def menu_funca(caixa_atual):
    {Fore.WHITE}[11]{Fore.CYAN} 🎛️ Filtro
 
  {Fore.MAGENTA}❖ MARKETING E FORNECEDORES {Fore.CYAN}─────────────────────────────────────────
-   {Fore.WHITE}[12]{Fore.CYAN} 🤝 Novo Fornecedor             {Fore.WHITE}[13]{Fore.CYAN} 🏆 Cupons Mais Utilizados
+   {Fore.WHITE}[12]{Fore.CYAN} 🤝 Novo Fornecedor            {Fore.WHITE}[13]{Fore.CYAN} 🏆 Cupons Mais Utilizados
    {Fore.WHITE}[14]{Fore.CYAN} 🗣️ Reclame Aqui
 
  ──────────────────────────────────────────────────────────────────────
@@ -188,3 +190,21 @@ def pausar():
     print(Fore.YELLOW + "\n➤ Pressione [ENTER] para continuar..." + Fore.RESET)
     input()
     delay()
+
+def barra_carregamento(texto="Carregando", tamanho=30):
+    sys.stdout.write(Fore.CYAN + f"\n{texto} " + Fore.RESET)
+    
+    for i in range(tamanho):
+        time.sleep(0.05)  # Tempo de espera (simula o carregamento)
+        sys.stdout.write(Fore.YELLOW + "█" + Fore.RESET)
+        sys.stdout.flush()
+        
+    sys.stdout.write(Fore.CYAN + " Concluído!\n" + Fore.RESET)
+    time.sleep(0.5)
+
+def digitar_texto(texto, velocidade=0.03):
+    for letra in texto:
+        sys.stdout.write(letra)
+        sys.stdout.flush()
+        time.sleep(velocidade)
+    print()
