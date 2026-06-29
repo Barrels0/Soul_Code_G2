@@ -20,9 +20,6 @@ def obter_conexao():
         print(Fore.RED + Style.BRIGHT + f"\n[✖] ERRO: Falha ao conectar ao banco de dados: {erro}" + Fore.RESET)
         return None
     
-    
-    
-    
 def executar_query(conexao, cursor, query, parametros=None):
     if not conexao or not cursor:
         raise Exception("Conexão com o banco não está estabelecida.")
@@ -31,7 +28,6 @@ def executar_query(conexao, cursor, query, parametros=None):
         cursor.execute(query, parametros)
     else:
         cursor.execute(query)
-
 
 def fechar_execusao(conexao, cursor):
     if cursor is not None:
@@ -51,6 +47,10 @@ def enviar_email_relatorio(id_operador, resposta, assunto):
     senha_app = os.getenv("GMAIL")
     
     conexao = obter_conexao()
+    if not conexao:
+        print(Fore.RED + Style.BRIGHT + "\n[✖] ERRO: Sistema offline. Não foi possível acessar os dados para enviar o e-mail." + Fore.RESET)
+        return False
+        
     cursor = conexao.cursor()
     
     try:

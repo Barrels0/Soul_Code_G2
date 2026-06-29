@@ -31,12 +31,11 @@ from colorama import init, Fore, Style
 
 init(autoreset=True)
 
+# Inicia as tabelas se for a primeira vez rodando o sistema
 inicializar_banco()
-
 
 while True:
     try:
-        # Menu principal redesenhado para ficar mais bonito e profissional
         print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
  █  {Fore.YELLOW}BEM-VINDO À DISTRIBUIDORA G2{Fore.CYAN}                                      █
@@ -48,9 +47,7 @@ while True:
  {Fore.WHITE}[0]{Fore.CYAN} Sair do sistema
  ══════════════════════════════════════════════════════════════════════{Fore.RESET}""")
         
-        escolha = force_int(
-            Fore.YELLOW + "➤ Selecione uma das opções acima: " + Fore.RESET
-        )
+        escolha = force_int(Fore.YELLOW + "➤ Selecione uma das opções acima: " + Fore.RESET)
 
         if escolha == 0:
             print(Fore.YELLOW + "\n[!] Saindo do sistema. Até logo!" + Fore.RESET)
@@ -64,19 +61,21 @@ while True:
             if user_ativ is None:
                 continue
             break
+            
         elif escolha == 2:
             user_ativ, id_operador = login()
             if user_ativ is None:
                 continue
             break
+            
         elif escolha == 3:
-            termo_busca = force_str(
-                Fore.YELLOW
-                + "\n➤ Digite o nome do seu usuário ou o seu e-mail: "
-                + Fore.RESET
-            )
+            termo_busca = force_str(Fore.YELLOW + "\n➤ Digite o nome do seu usuário ou o seu e-mail: " + Fore.RESET)
 
             conexao = obter_conexao()
+            if not conexao:
+                print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+                continue
+                
             cursor = conexao.cursor()
 
             cursor.execute(
@@ -84,26 +83,25 @@ while True:
                 (termo_busca, termo_busca),
             )
             result = cursor.fetchone()
-
             fechar_execusao(conexao, cursor)
 
             if not result:
                 print(Fore.RED + "\n[✖] Nenhum usuário encontrado com esse nome/e-mail!" + Fore.RESET)
+                continue
             else:
-                print(
-                    Fore.GREEN
-                    + f"\n[✔] Usuário encontrado: {result[1]} | E-mail: {result[2]}"
-                    + Fore.RESET
-                )
+                print(Fore.GREEN + f"\n[✔] Usuário encontrado: {result[1]} | E-mail: {result[2]}" + Fore.RESET)
                 recuperar_senha(result[0])
+                
                 user_ativ, id_operador = login()
                 if user_ativ is None:
                     continue
-
                 break
+                
     except mysql.connector.Error as e:
-        conexao.rollback()
         print(Fore.RED + Style.BRIGHT + f"\n[✖] Ocorreu um erro no banco de dados: {e}" + Fore.RESET)
+        if "conexao" in locals() and conexao is not None and conexao.is_connected():
+            conexao.rollback()
+            
     finally:
         fechar_execusao(
             conexao if "conexao" in locals() else None,
@@ -111,33 +109,28 @@ while True:
         )
         
 conexao = obter_conexao()
-cursor = conexao.cursor()
+if conexao:
+    cursor = conexao.cursor()
+    try:
+        cursor.execute("SELECT SUM(valor_total) FROM vendas WHERE id_usuario = %s", (id_operador,))
+        resultado_caixa = cursor.fetchone()[0]
+        caixa = resultado_caixa if resultado_caixa is not None else 0.0
+    except mysql.connector.Error as e:
+        conexao.rollback()
+        print(Fore.RED + f"\n[✖] Erro ao carregar caixa: {e}" + Fore.RESET)
+        caixa = 0.0
+    finally:
+        fechar_execusao(conexao, cursor)
+else:
+    caixa = 0.0
 
-try:
-    cursor.execute(
-        "SELECT SUM(valor_total) FROM vendas WHERE id_usuario = %s", (id_operador,)
-    )
-    resultado_caixa = cursor.fetchone()[0]
-    caixa = resultado_caixa if resultado_caixa is not None else 0.0
-except mysql.connector.Error as e:
-    conexao.rollback()
-    print(Fore.RED + f"\n[✖] Ocorreu um erro: {e}" + Fore.RESET)
-finally:
-    fechar_execusao(
-        conexao if "conexao" in locals() else None,
-        cursor if "cursor" in locals() else None,
-    )
 limpar_tela()
     
 try:
     while True:
         if user_ativ == "Admin":
             menu_adm(caixa)
-            comando = force_int(
-                Fore.YELLOW
-                + "➤ Digite o número da função que você deseja acessar: "
-                + Fore.RESET
-            )
+            comando = force_int(Fore.YELLOW + "➤ Digite o número da função que deseja acessar: " + Fore.RESET)
 
             if comando == 0:
                 print(f"""{Fore.GREEN}{Style.BRIGHT}
@@ -162,7 +155,6 @@ try:
                 pausar()
                 limpar_tela()
                 continuar_sistema_a(caixa)
-                
             elif comando == 4:
                 adicionar_item()
                 limpar_tela()
@@ -193,25 +185,27 @@ try:
                 continuar_sistema_a(caixa)
             elif comando == 11:
                 conexao = obter_conexao()
-                cursor = conexao.cursor()
-                cursor.execute("SELECT id_cliente, nome, cnpj_cpf FROM clientes")
-                clientes = cursor.fetchall()        
-                print(Fore.CYAN + Style.BRIGHT + "\nEsses são os nossos clientes:")
-                for linha in clientes:
-                    print(Fore.WHITE + f"-> ID: {linha[0]} | Nome: {linha[1]} | Doc: {linha[2]}")
-
+                if conexao:
+                    cursor = conexao.cursor()
+                    cursor.execute("SELECT id_cliente, nome, cnpj_cpf FROM clientes")
+                    clientes = cursor.fetchall()        
+                    print(Fore.CYAN + Style.BRIGHT + "\nEsses são os nossos clientes:")
+                    for linha in clientes:
+                        print(Fore.WHITE + f"-> ID: {linha[0]} | Nome: {linha[1]} | Doc: {linha[2]}")
+                    fechar_execusao(conexao, cursor)
                 off_cli()
                 limpar_tela()
                 continuar_sistema_a(caixa)
             elif comando == 12:
                 conexao = obter_conexao()
-                cursor = conexao.cursor()
-                cursor.execute("SELECT id_cliente, nome, cnpj_cpf FROM clientes")
-                clientes = cursor.fetchall()        
-                print(Fore.CYAN + Style.BRIGHT + "\nEsses são os nossos clientes:")
-                for linha in clientes:
-                    print(Fore.WHITE + f"-> ID: {linha[0]} | Nome: {linha[1]} | Doc: {linha[2]}")
-
+                if conexao:
+                    cursor = conexao.cursor()
+                    cursor.execute("SELECT id_cliente, nome, cnpj_cpf FROM clientes")
+                    clientes = cursor.fetchall()        
+                    print(Fore.CYAN + Style.BRIGHT + "\nEsses são os nossos clientes:")
+                    for linha in clientes:
+                        print(Fore.WHITE + f"-> ID: {linha[0]} | Nome: {linha[1]} | Doc: {linha[2]}")
+                    fechar_execusao(conexao, cursor)
                 atv_cli()
                 limpar_tela()
                 continuar_sistema_a(caixa)
@@ -220,7 +214,6 @@ try:
                 pausar()
                 limpar_tela()
                 continuar_sistema_a(caixa)
-                
             elif comando == 14:
                 busca()
                 pausar()
@@ -251,7 +244,6 @@ try:
                 pausar()
                 limpar_tela()
                 continuar_sistema_a(caixa)
-                
             elif comando == 20:
                 promocoes()
                 limpar_tela()
@@ -262,12 +254,14 @@ try:
                 continuar_sistema_a(caixa)
             elif comando == 22:
                 conexao = obter_conexao()
-                cursor = conexao.cursor()
-                cursor.execute("SELECT id_fornecedor, nome FROM fornecedores")
-                fornecedores = cursor.fetchall()        
-                print(Fore.CYAN + Style.BRIGHT + "\nEsses são os nossos clientes:")
-                for linha in fornecedores:
-                    print(Fore.WHITE + f"-> ID: {linha[0]} | Nome: {linha[1]}")
+                if conexao:
+                    cursor = conexao.cursor()
+                    cursor.execute("SELECT id_fornecedor, nome FROM fornecedores")
+                    fornecedores = cursor.fetchall()        
+                    print(Fore.CYAN + Style.BRIGHT + "\nEsses são os nossos fornecedores:")
+                    for linha in fornecedores:
+                        print(Fore.WHITE + f"-> ID: {linha[0]} | Nome: {linha[1]}")
+                    fechar_execusao(conexao, cursor)
                 off_forn()
                 limpar_tela()
                 continuar_sistema_a(caixa)
@@ -300,11 +294,7 @@ try:
 
         elif user_ativ == "Funcionario":
             menu_funca(caixa)
-            comando = force_int(
-                Fore.YELLOW
-                + "➤ Digite o número da função que você deseja acessar: "
-                + Fore.RESET
-            )
+            comando = force_int(Fore.YELLOW + "➤ Digite o número da função que deseja acessar: " + Fore.RESET)
 
             if comando == 0:
                 print(f"""{Fore.GREEN}{Style.BRIGHT}
@@ -314,7 +304,6 @@ try:
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
                 exit()
             elif comando == 1:
-                # ALTERADO: Adicionado id_operador como argumento
                 registar_venda(id_operador)
                 limpar_tela()
                 continuar_sistema_f(caixa)
@@ -324,7 +313,6 @@ try:
                 limpar_tela()
                 continuar_sistema_f(caixa)
             elif comando == 3:
-                # ALTERADO: Adicionado id_operador como argumento
                 exp_nota(id_operador)
                 pausar()
                 limpar_tela()

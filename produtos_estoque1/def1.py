@@ -3,6 +3,7 @@ from connectsql import obter_conexao, fechar_execusao
 from marketing_fornecedores.marketing import cadastrar_fornecedor
 import mysql.connector
 from colorama import Fore, Style
+
 def adicionar_item():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
@@ -51,6 +52,10 @@ def adicionar_item():
             return
             
         conexao = obter_conexao()
+        if not conexao:
+            print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+            return
+            
         cursor = conexao.cursor()
 
         try:
@@ -136,6 +141,10 @@ def alterar_preco():
         return
 
     conexao = obter_conexao()
+    if not conexao:
+        print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+        return
+        
     cursor = conexao.cursor()
 
     try:
@@ -176,11 +185,14 @@ def alterar_preco():
         )
 
 def repor_em_lote(*args):
-    # Se a função for chamada sem nenhum argumento, ela não faz nada
     if not args:
         return
 
     conexao = obter_conexao()
+    if not conexao:
+        print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+        return
+        
     cursor = conexao.cursor()
 
     try:
@@ -225,7 +237,6 @@ def repor_em_lote(*args):
             cursor if "cursor" in locals() else None
         )
 
-
 def repor_estoque():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
@@ -237,7 +248,6 @@ def repor_estoque():
     if opcao == '1':
         try:
             id_produto = bsc_id()
-            # Chama a função em lote passando apenas 1 argumento
             repor_em_lote(id_produto)
         except ValueError:
             print(Fore.RED + "\n[✖] ERRO: Digite um ID válido!" + Fore.RESET)
@@ -246,7 +256,6 @@ def repor_estoque():
         entrada = input(Fore.YELLOW + "➤ Digite os [IDs] separados por vírgula (ex: 2, 5, 8): " + Fore.RESET)
         try:
             ids_para_repor = [int(x.strip()) for x in entrada.split(',')]
-            
             repor_em_lote(*ids_para_repor)
         except ValueError:
             print(Fore.RED + "\n[✖] ERRO: Formato inválido! Use apenas números separados por vírgula." + Fore.RESET)
@@ -276,10 +285,14 @@ def alterar_nome():
             print(Fore.RED + "\n[✖] ERRO: O ID precisa ser um número válido." + Fore.RESET)
             continue
 
-        try:
-            conexao = obter_conexao()
-            cursor = conexao.cursor()
+        conexao = obter_conexao()
+        if not conexao:
+            print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+            break
+            
+        cursor = conexao.cursor()
 
+        try:
             cursor.execute("SELECT nome FROM produtos WHERE id_produto = %s AND ativo = 1", (id_produto,))
             found = cursor.fetchall()
 
@@ -321,11 +334,7 @@ def alterar_nome():
                 cursor if "cursor" in locals() else None
             )
 
-
 def ativ_off(tabela, coluna_id, nome_exibicao, ativar=True):
-    """
-    Função universal para ativar ou desativar registros em qualquer tabela.
-    """
     acao_titulo = "ATIVAR" if ativar else "DESATIVAR"
     acao_verbo = "ativar" if ativar else "desativar"
     status_buscado = 0 if ativar else 1 
@@ -349,6 +358,10 @@ def ativ_off(tabela, coluna_id, nome_exibicao, ativar=True):
             continue
 
         conexao = obter_conexao()
+        if not conexao:
+            print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+            return
+            
         cursor = conexao.cursor()
 
         try:
@@ -383,6 +396,7 @@ def ativ_off(tabela, coluna_id, nome_exibicao, ativar=True):
                 conexao if "conexao" in locals() else None, 
                 cursor if "cursor" in locals() else None
             )        
+
 def off_prod():
     ativ_off("produtos", "id_produto", "produto", ativar=False)
 
@@ -417,7 +431,7 @@ def add_cliente():
             print(Fore.YELLOW + "\n[!] Voltando ao menu principal..." + Fore.RESET)
             return None
             
-        if len(cnpj) != 14 and len(cnpj) != 11 or not cnpj.isdigit():
+        if len(cnpj) not in [11, 14] or not cnpj.isdigit():
             print(Fore.RED + "\n[✖] ERRO: Documento inválido! Digite 11 (CPF) ou 14 (CNPJ) números." + Fore.RESET)
             continue
             
@@ -444,6 +458,10 @@ def add_cliente():
         telefone_ajustado = f"({telefone[:2]}) {telefone[2:7]}-{telefone[7:]}"
 
         conexao = obter_conexao()
+        if not conexao:
+            print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+            return None
+            
         cursor = conexao.cursor()
         try:
             cursor.execute(
@@ -468,6 +486,7 @@ def add_cliente():
                 conexao if "conexao" in locals() else None, 
                 cursor if "cursor" in locals() else None
             )   
+
 def add_categoria():
     while True:
         print(f"""{Fore.CYAN}{Style.BRIGHT}
@@ -480,6 +499,10 @@ def add_categoria():
             return None
             
         conexao = obter_conexao()
+        if not conexao:
+            print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+            return None
+            
         cursor = conexao.cursor()
         try:
             cursor.execute(
@@ -491,7 +514,7 @@ def add_categoria():
             
             id_gerado = cursor.lastrowid
             print(Fore.GREEN + f"\n[✔] A categoria '{nome_categoria.title()}' foi salva com sucesso! " + Fore.RESET)
-            return id_gerado # Retorna o número caso outra função precise dele futuramente
+            return id_gerado 
 
         except mysql.connector.Error as e:
             conexao.rollback()

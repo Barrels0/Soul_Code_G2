@@ -1,6 +1,8 @@
-import mysql.connector,random,string
-from connectsql import obter_conexao, fechar_execusao,enviar_email_relatorio
-from forces import force_str,force_int
+import mysql.connector
+import random
+import string
+from connectsql import obter_conexao, fechar_execusao, enviar_email_relatorio
+from forces import force_str, force_int
 from interface import limpar_tela
 from colorama import Fore, Style
 import pywhatkit as kit
@@ -29,6 +31,10 @@ def new_user():
  █  {Fore.YELLOW}CADASTRAR NOVO USUÁRIO{Fore.CYAN}                                            █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     conexao = obter_conexao()
+    if not conexao:
+        print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+        return False
+
     cursor = conexao.cursor()
     try:
         while True:
@@ -36,14 +42,16 @@ def new_user():
             if new_user == '0':
                 print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
                 return None
+                
             try: 
                 senha = force_int(Fore.YELLOW + "➤ Digite a senha desejada (SOMENTE NÚMEROS - [0] PARA SAIR): " + Fore.RESET)
-                if senha == '0':
+                if senha == 0:
                     print(Fore.YELLOW + "\n[!] Operação cancelada. Voltando ao menu..." + Fore.RESET)
                     return None
             except ValueError:
                 print(Fore.RED + "\n[✖] ERRO: Digite somente números para a senha." + Fore.RESET)
                 continue
+                
             while True:
                 email = force_str(Fore.YELLOW + "➤ Digite o e-mail que será vinculado (ou [0] para sair): " + Fore.RESET)
                 if email == '0':
@@ -77,6 +85,7 @@ def new_user():
             except ValueError:
                 print(Fore.RED + "\n[✖] ERRO: Selecione apenas números." + Fore.RESET)
                 continue
+                
             while True:
                 confirm = force_int(Fore.YELLOW + "\n➤ Para confirmar, digite a senha master de ADM (ou [0] para sair): " + Fore.RESET) 
                 if confirm == 0:
@@ -88,6 +97,10 @@ def new_user():
                     continue
                 else:
                     break
+                    
+            if confirm == 0:
+                return False
+
             try:
                 cursor.execute(
                     """SELECT usuario,gmail FROM usuarios WHERE (usuario = %s OR gmail = %s) AND ativo = 1 """, (new_user,email)
@@ -107,15 +120,16 @@ def new_user():
 
                 print(Fore.GREEN + Style.BRIGHT + f"\n[✔] Sucesso! Usuário '{new_user}' cadastrado como {cargo}." + Fore.RESET)
                 return True
+                
             except mysql.connector.Error as erro:
                 conexao.rollback()
                 print(Fore.RED + Style.BRIGHT + f"\n[✖] Ocorrreu um erro crítico no banco de dados: {erro}" + Fore.RESET)
 
     finally:
         fechar_execusao(
-        conexao if "conexao" in locals() else None, 
-        cursor if "cursor" in locals() else None
-            )
+            conexao if "conexao" in locals() else None, 
+            cursor if "cursor" in locals() else None
+        )
 
 def login():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
@@ -123,6 +137,10 @@ def login():
  █  {Fore.YELLOW}FAZER LOGIN{Fore.CYAN}                                                       █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     conexao = obter_conexao()
+    if not conexao:
+        print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+        return None, 'voltar'
+
     cursor = conexao.cursor()
     try:
         while True:
@@ -130,7 +148,6 @@ def login():
             if user == "0":
                 print(Fore.YELLOW + "\n[!] Voltando ao menu principal..." + Fore.RESET)
                 limpar_tela()
-
                 return None, 'voltar'
 
             try:
@@ -138,14 +155,13 @@ def login():
             except ValueError:
                 print(Fore.RED + "\n[✖] Senha inválida. Use apenas números." + Fore.RESET)
                 continue
+                
             try:
                 cursor.execute(
                     "SELECT id_usuario, usuario,senha,cargo FROM usuarios WHERE usuario = %s AND senha = %s AND ativo = 1",
                     (user, senha),
                 )
-                found = (
-                    cursor.fetchone()
-                )
+                found = cursor.fetchone()
 
                 if not found:
                     print(Fore.RED + "\n[✖] Login ou senha incorretos. Tente novamente." + Fore.RESET)
@@ -166,8 +182,9 @@ def login():
                 print(Fore.RED + Style.BRIGHT + f"\n[✖] Ocorreu um erro crítico no banco de dados: {erro}" + Fore.RESET)
     finally: 
         fechar_execusao(
-        conexao if "conexao" in locals() else None, 
-        cursor if "cursor" in locals() else None)
+            conexao if "conexao" in locals() else None, 
+            cursor if "cursor" in locals() else None
+        )
 
 def recuperar_senha(id_operador):
     print(f"""{Fore.CYAN}{Style.BRIGHT}
@@ -181,6 +198,7 @@ def recuperar_senha(id_operador):
 """)
 
     escolha = force_int(Fore.YELLOW + "➤ Como deseja receber o código? [1] E-mail | [2] WhatsApp: " + Fore.RESET)
+    
     if escolha == 1:
         assunto = "Recuperação de Senha - Distribuidora G2"
         caracteres = string.ascii_uppercase + string.digits
@@ -203,6 +221,8 @@ def recuperar_senha(id_operador):
             return
             
         conexao = obter_conexao()
+        if not conexao:
+            return
         cursor = conexao.cursor()
         
         try:
@@ -225,18 +245,22 @@ def recuperar_senha(id_operador):
                 conexao if "conexao" in locals() else None, 
                 cursor if "cursor" in locals() else None
             )
+            
     elif escolha == 2:
         telefone = input(Fore.YELLOW + "➤ Digite seu telefone com DDI e DDD (EX: +5511999998888): " + Fore.RESET).strip()
         if not telefone.startswith("+") or not telefone[1:].isdigit() or len(telefone) < 12:
             print(Fore.RED + "\n[✖] ERRO: Número de telefone inválido! O formato exigido é +5511999998888." + Fore.RESET)
             return
+            
         caracteres = string.ascii_uppercase + string.digits
         codigo_gerado = "".join(random.choices(caracteres, k=8))
         
         print(Fore.CYAN + "\nPreparando envio pelo WhatsApp. Não feche o navegador que será aberto..." + Fore.RESET)
         kit.sendwhatmsg_instantly(f"{telefone}",f"Olá!\n\nSeu código de verificação para acesso ao sistema é: {codigo_gerado}\n\nSe você não solicitou esta recuperação, por favor ignore este aviso.", wait_time=10)
-        time.sleep()
+        
+        time.sleep(5)
         pyautogui.press('enter')
+        
         print(Fore.GREEN + "\n[✔] Mensagem de verificação disparada pelo WhatsApp com sucesso!" + Fore.RESET)
         
         codigo_digitado = input(Fore.YELLOW + "\n➤ Digite o código de 8 dígitos que chegou no seu WhatsApp: " + Fore.RESET).strip().upper()
@@ -246,10 +270,13 @@ def recuperar_senha(id_operador):
             return
             
         conexao = obter_conexao()
+        if not conexao:
+            return
         cursor = conexao.cursor()
         
         try:
-            cursor.execute("SELECT senha,cargo FROM usuarios WHERE id_usuario = %s", (id_operador,))
+            # Unificado com a busca de email (não precisa retornar o cargo, pois o main não usa)
+            cursor.execute("SELECT senha FROM usuarios WHERE id_usuario = %s", (id_operador,))
             resultado = cursor.fetchone()
             
             if resultado:
@@ -258,10 +285,6 @@ def recuperar_senha(id_operador):
  █  [✔] IDENTIDADE VERIFICADA COM SUCESSO!                            █
  █  Sua senha atual é: {Fore.YELLOW}{str(resultado[0]):<47}{Fore.GREEN}█
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
-                if resultado[1] == "Admin":
-                    return "Admin"
-                else:
-                    return "Funcionario"
             else:
                 print(Fore.RED + "\n[✖] ERRO: Usuário não localizado no banco de dados." + Fore.RESET)
                 

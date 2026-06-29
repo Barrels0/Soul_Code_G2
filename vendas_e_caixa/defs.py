@@ -1,5 +1,7 @@
 from connectsql import obter_conexao, fechar_execusao, enviar_email_relatorio
-import mysql.connector, datetime,time
+import mysql.connector
+import datetime
+import time
 from forces import force_int, force_str
 from marketing_fornecedores.marketing import teste_qualidade
 from produtos_estoque1.def1 import add_cliente
@@ -12,7 +14,12 @@ def exp_nota(id_operador):
  █  {Fore.YELLOW}EXPORTAR NOTA FISCAL{Fore.CYAN}                                              █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
     barra_carregamento("Gerando relatório de fechamento")    
+    
     conexao = obter_conexao()
+    if not conexao:
+        print(Fore.RED + "\n[✖] Sistema offline. Não é possível exportar no momento." + Fore.RESET)
+        return None
+        
     cursor = conexao.cursor()
 
     try:
@@ -107,7 +114,12 @@ def nota_fiscal():
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
  █  {Fore.YELLOW}NOTA FISCAL{Fore.CYAN}                                                       █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
+    
     conexao = obter_conexao()
+    if not conexao:
+        print(Fore.RED + "\n[✖] Sistema offline. Não é possível exibir as notas no momento." + Fore.RESET)
+        return
+        
     cursor = conexao.cursor()
 
     try:

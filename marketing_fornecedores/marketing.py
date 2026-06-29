@@ -64,6 +64,7 @@ def cadastrar_fornecedor():
 
         conexao = obter_conexao()
         if not conexao:
+            print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
             return None
             
         cursor = conexao.cursor()
@@ -128,6 +129,7 @@ def cadastrar_cupom():
 
         conexao = obter_conexao()
         if not conexao:
+            print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
             return
             
         cursor = conexao.cursor()
@@ -189,6 +191,10 @@ def promocoes():
                 continue
                 
             conexao = obter_conexao()
+            if not conexao:
+                print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+                continue
+                
             cursor = conexao.cursor()
             
             try:
@@ -219,6 +225,10 @@ def promocoes():
                 continue
 
             conexao = obter_conexao()
+            if not conexao:
+                print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+                continue
+                
             cursor = conexao.cursor()
             
             try:
@@ -236,6 +246,10 @@ def promocoes():
 
         elif escolha_promo == 3:
             conexao = obter_conexao()
+            if not conexao:
+                print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+                continue
+                
             cursor = conexao.cursor()
 
             try:
@@ -279,6 +293,10 @@ def promocoes():
             
             if confirmar in ["S", "SIM"]:
                 conexao = obter_conexao()
+                if not conexao:
+                    print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
+                    continue
+                    
                 cursor = conexao.cursor()
                 try:
                     cursor.execute("UPDATE produtos SET desconto = 0")
@@ -304,6 +322,7 @@ def relatorio_cupons_mais_utilizados():
 
     conexao = obter_conexao()
     if not conexao:
+        print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
         return
 
     cursor = conexao.cursor()
@@ -394,6 +413,7 @@ def teste_qualidade(id_produto):
 
     conexao = obter_conexao()
     if not conexao:
+        print(Fore.RED + "\n[✖] Erro de conexão com o banco de dados." + Fore.RESET)
         return False
         
     cursor = conexao.cursor()

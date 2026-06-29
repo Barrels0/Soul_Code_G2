@@ -1,8 +1,7 @@
 from forces import force_int
-from interface import menu_adm, menu_funca
 from colorama import Fore, Style
+import sys
 
-# Importar o menu
 def continuar_sistema_a(caixa):
     while True:
         print(f"""{Fore.CYAN}{Style.BRIGHT}
@@ -13,21 +12,23 @@ def continuar_sistema_a(caixa):
    {Fore.WHITE}[1]{Fore.CYAN} Voltar ao Menu Principal
    {Fore.WHITE}[0]{Fore.CYAN} Sair do Sistema{Fore.RESET}
 """)
-        try:
-            acao_pos_comando = force_int(Fore.YELLOW + "➤ Escolha uma ação: " + Fore.RESET)
-            if acao_pos_comando == 1:
-                return
-            elif acao_pos_comando == 0:
-                print(f"""{Fore.GREEN}{Style.BRIGHT}
+        
+        acao_pos_comando = force_int(Fore.YELLOW + "➤ Escolha uma ação: " + Fore.RESET)
+        
+        if acao_pos_comando == 1:
+            return
+            
+        elif acao_pos_comando == 0:
+            print(f"""{Fore.GREEN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
  █  OBRIGADO POR VISITAR NOSSA LOJA!                 █
  █  CAIXA DO TURNO: R$ {caixa:>10.2f}                    █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
-                exit()
-            else:
-                print(Fore.RED + "\n[✖] ERRO: Opção inválida. Tente novamente." + Fore.RESET)
-        except ValueError:
-            return menu_adm
+            sys.exit()
+            
+        else:
+            print(Fore.RED + "\n[✖] ERRO: Opção inválida. Tente novamente." + Fore.RESET)
+
 
 def continuar_sistema_f(caixa):
     while True:
@@ -39,18 +40,19 @@ def continuar_sistema_f(caixa):
    {Fore.WHITE}[1]{Fore.CYAN} Voltar ao Menu Principal
    {Fore.WHITE}[0]{Fore.CYAN} Sair do Sistema{Fore.RESET}
 """)
-        try:
-            acao_pos_comando = force_int(Fore.YELLOW + "➤ Escolha uma ação: " + Fore.RESET)
-            if acao_pos_comando == 1:
-                return
-            elif acao_pos_comando == 0:
-                print(f"""{Fore.GREEN}{Style.BRIGHT}
+        
+        acao_pos_comando = force_int(Fore.YELLOW + "➤ Escolha uma ação: " + Fore.RESET)
+        
+        if acao_pos_comando == 1:
+            return
+            
+        elif acao_pos_comando == 0:
+            print(f"""{Fore.GREEN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
  █  OBRIGADO POR VISITAR NOSSA LOJA!                 █
  █  CAIXA DO TURNO: R$ {caixa:>10.2f}                    █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
-                exit()
-            else:
-                print(Fore.RED + "\n[✖] ERRO: Opção inválida. Tente novamente." + Fore.RESET)
-        except ValueError:
-            return menu_funca
+            sys.exit()
+            
+        else:
+            print(Fore.RED + "\n[✖] ERRO: Opção inválida. Tente novamente." + Fore.RESET)

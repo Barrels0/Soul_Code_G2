@@ -1,8 +1,9 @@
 import mysql.connector
 import datetime
 import pandas as pd
+import warnings  # Adicionado para blindar o visual do terminal
 from connectsql import obter_conexao, fechar_execusao
-from forces import force_int, force_float, force_str, bsc_id
+from forces import force_int, force_float, force_str
 from consulta_relatorio.exportacoes import perguntar_exportacao
 from colorama import Fore, Style
 from interface import pausar, limpar_tela
@@ -10,7 +11,7 @@ from interface import pausar, limpar_tela
 def relatorio_expresso():
     print(f"""{Fore.CYAN}{Style.BRIGHT}
  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
- █  {Fore.YELLOW}RELATÓRIO EXPRESSO: ESTOQUE CRÍTICO{Fore.CYAN}                              █
+ █  {Fore.YELLOW}RELATÓRIO EXPRESSO: ESTOQUE CRÍTICO{Fore.CYAN}                               █
  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█{Fore.RESET}""")
 
     try:
@@ -29,7 +30,10 @@ def relatorio_expresso():
             ORDER BY quantidade_estoque ASC
         """
         
-        df_critico = pd.read_sql(query, conexao)
+        # Ignora avisos internos do Pandas sobre DBAPI para não poluir o terminal
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', UserWarning)
+            df_critico = pd.read_sql(query, conexao)
 
         if df_critico.empty:
             print(Fore.GREEN + "Estoque seguro! Nenhuma bebida com menos de 5 unidades." + Fore.RESET)
@@ -352,7 +356,7 @@ def filtros():
                         
                         if desconto and float(desconto) > 0:
                             preco_final = float(preco_venda) - (float(preco_venda) * (float(desconto) / 100))
-                            tag_promo = f" (-{desconto}%) | PROMO: {Fore.GREEN}R$ {preco_final:.2f}{Fore.RESET}"
+                            tag_promo = f" (-{float(desconto):.0f}%) | PROMO: {Fore.GREEN}R$ {preco_final:.2f}{Fore.RESET}"
                         
                         print(
                             f"{bebida[0]} | {bebida[1]} | {Fore.GREEN}R$ {bebida[2]:.2f}{Fore.RESET}{tag_promo} | Estoque: {bebida[3]}"
@@ -502,7 +506,7 @@ def catalogo_ordenado():
                     
                     if desconto and float(desconto) > 0:
                         preco_final = float(preco_venda) - (float(preco_venda) * (float(desconto) / 100))
-                        tag_promo = f" (-{desconto}%) | PREÇO PROMO: {Fore.GREEN}R${preco_final:.2f}{Fore.RESET}"
+                        tag_promo = f" (-{float(desconto):.0f}%) | PREÇO PROMO: {Fore.GREEN}R${preco_final:.2f}{Fore.RESET}"
                     
                     print(f"= {nome} | Base: {Fore.GREEN}R${float(preco_venda):.2f}{Fore.RESET}{tag_promo} | Nota:{nota} | Quantidade:{quantidade_estoque}")
                 
